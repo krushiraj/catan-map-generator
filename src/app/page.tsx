@@ -20,6 +20,13 @@ const HomePage = () => {
     setSurpriseMode(true);
   };
 
+  const handleNumPlayersChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (value >= 4 && value <= 6) {
+      setNumPlayers(value);
+    }
+  };
+
   return (
     <div className="container">
       <h1 className="header">Catan Map Generator</h1>
@@ -29,9 +36,10 @@ const HomePage = () => {
           <select
             className="input"
             value={numPlayers}
-            onChange={(e) => setNumPlayers(parseInt(e.target.value))}
+            onChange={handleNumPlayersChange}
           >
             <option value={4}>4 Players</option>
+            <option value={5}>5 Players</option>
             <option value={6}>6 Players</option>
           </select>
         </label>
