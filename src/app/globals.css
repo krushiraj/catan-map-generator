@@ -19,3 +19,39 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+button {
+  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+}
+
+input, select {
+  @apply border border-gray-300 rounded py-2 px-4;
+}
+
+.container {
+  @apply max-w-4xl mx-auto p-4;
+}
+
+.header {
+  @apply text-3xl font-bold mb-4;
+}
+
+.section {
+  @apply mb-8;
+}
+
+.map {
+  @apply grid grid-cols-4 gap-4;
+}
+
+.map-tile {
+  @apply border border-gray-400 rounded p-2;
+}
+
+.player-setup {
+  @apply mb-4;
+}
+
+.player-list {
+  @apply list-disc pl-5;
+}
