@@ -79,3 +79,17 @@
   font-weight: bold;
   color: #333;
 }
+
+.number-token {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: black;
+}
