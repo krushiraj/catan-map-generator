@@ -17,9 +17,9 @@ const MapGenerator = ({ numPlayers, noSameResources, noSameNumbers, scarceResour
     }
 
     const resources = {
-      4: { wood: 4, brick: 3, sheep: 4, ore: 3, hay: 4, desert: 1 },
-      5: { wood: 6, brick: 5, sheep: 6, ore: 5, hay: 6, desert: 2 },
-      6: { wood: 6, brick: 5, sheep: 6, ore: 5, hay: 6, desert: 2 }
+      4: { wood: 4, brick: 3, sheep: 4, ore: 3, wheat: 4, desert: 1 },
+      5: { wood: 6, brick: 5, sheep: 6, ore: 5, wheat: 6, desert: 2 },
+      6: { wood: 6, brick: 5, sheep: 6, ore: 5, wheat: 6, desert: 2 }
     };
 
     const layout = {
