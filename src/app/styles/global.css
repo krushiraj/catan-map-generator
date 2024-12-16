@@ -1,0 +1,67 @@
+:root {
+  --pastel-red: #ff6961;
+  --pastel-yellow: #fdfd96;
+  --pastel-gray: #cfcfc4;
+  --pastel-green: #77dd77;
+  --pastel-light-green: #c1e1c1;
+  --player-red: #ff0000;
+  --player-blue: #0000ff;
+  --player-green: #008000;
+  --player-brown: #a52a2a;
+  --player-orange: #ffa500;
+  --player-white: #ffffff;
+  --player-yellow: #ffff00;
+}
+
+.resource-brick {
+  background-color: var(--pastel-red);
+  background-image: url('/icons/brick.svg');
+}
+
+.resource-wheat {
+  background-color: var(--pastel-yellow);
+  background-image: url('/icons/wheat.svg');
+}
+
+.resource-ore {
+  background-color: var(--pastel-gray);
+  background-image: url('/icons/ore.svg');
+}
+
+.resource-wood {
+  background-color: var(--pastel-green);
+  background-image: url('/icons/wood.svg');
+}
+
+.resource-sheep {
+  background-color: var(--pastel-light-green);
+  background-image: url('/icons/sheep.svg');
+}
+
+.player-red {
+  color: var(--player-red);
+}
+
+.player-blue {
+  color: var(--player-blue);
+}
+
+.player-green {
+  color: var(--player-green);
+}
+
+.player-brown {
+  color: var(--player-brown);
+}
+
+.player-orange {
+  color: var(--player-orange);
+}
+
+.player-white {
+  color: var(--player-white);
+}
+
+.player-yellow {
+  color: var(--player-yellow);
+}
