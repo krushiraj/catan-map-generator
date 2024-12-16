@@ -1,2 +1,1 @@
-# catan-map-generator
-A progressive web app to generate map patterns for Catan game
+This repository is empty. Any task executed on it should be considered a new capability and needs to be created.
