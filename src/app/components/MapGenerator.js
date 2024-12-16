@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from 'react';
 
 const MapGenerator = ({ numPlayers, noSameResources, noSameNumbers, scarceResource, surpriseMode, players }) => {
