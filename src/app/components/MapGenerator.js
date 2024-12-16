@@ -48,13 +48,40 @@ const MapGenerator = ({ numPlayers, noSameResources, noSameNumbers, scarceResour
       }
     }
 
+    // Handle scarce resource constraint
+    if (scarceResource && scarceResource !== 'random') {
+      const scarceCount = Math.floor(resourceList.length / 5);
+      resourceList = resourceList.filter(resource => resource !== scarceResource);
+      for (let i = 0; i < scarceCount; i++) {
+        resourceList.push(scarceResource);
+      }
+    } else if (scarceResource === 'random') {
+      const randomResource = Object.keys(resources[numPlayers]).filter(resource => resource !== 'desert')[Math.floor(Math.random() * 5)];
+      const scarceCount = Math.floor(resourceList.length / 5);
+      resourceList = resourceList.filter(resource => resource !== randomResource);
+      for (let i = 0; i < scarceCount; i++) {
+        resourceList.push(randomResource);
+      }
+    }
+
     const generatedMap = [];
     let id = 1;
     for (const row of layout[numPlayers]) {
       const rowTiles = [];
       for (let i = 0; i < row; i++) {
-        const resource = resourceList.splice(Math.floor(Math.random() * resourceList.length), 1)[0];
-        const number = resource === 'desert' ? null : numberTokenList.splice(Math.floor(Math.random() * numberTokenList.length), 1)[0];
+        let resource;
+        let number;
+
+        // Ensure no same resources touch
+        do {
+          resource = resourceList.splice(Math.floor(Math.random() * resourceList.length), 1)[0];
+        } while (noSameResources && rowTiles.some(tile => tile.resource === resource));
+
+        // Ensure no same numbers touch
+        do {
+          number = resource === 'desert' ? null : numberTokenList.splice(Math.floor(Math.random() * numberTokenList.length), 1)[0];
+        } while (noSameNumbers && rowTiles.some(tile => tile.number === number));
+
         rowTiles.push({ id: id++, resource, number });
       }
       generatedMap.push(rowTiles);
