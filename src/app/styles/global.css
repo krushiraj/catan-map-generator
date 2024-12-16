@@ -65,3 +65,17 @@
 .player-yellow {
   color: var(--player-yellow);
 }
+
+.map-tile {
+  width: 100px;
+  height: 86.6px;
+  background-size: cover;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}

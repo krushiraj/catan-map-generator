@@ -11,25 +11,41 @@ const MapGenerator = ({ numPlayers, noSameResources, noSameNumbers, scarceResour
   }, [numPlayers, noSameResources, noSameNumbers, scarceResource]);
 
   const generateMap = () => {
-    // Mock map generation logic
-    const generatedMap = [
-      { id: 1, resource: 'brick', number: 6 },
-      { id: 2, resource: 'wheat', number: 8 },
-      { id: 3, resource: 'ore', number: 3 },
-      { id: 4, resource: 'wood', number: 4 },
-      { id: 5, resource: 'sheep', number: 5 },
-      { id: 6, resource: 'brick', number: 9 },
-      { id: 7, resource: 'wheat', number: 10 },
-      { id: 8, resource: 'ore', number: 11 },
-      { id: 9, resource: 'wood', number: 12 },
-      { id: 10, resource: 'sheep', number: 2 },
-      { id: 11, resource: 'brick', number: 6 },
-      { id: 12, resource: 'wheat', number: 8 },
-      { id: 13, resource: 'ore', number: 3 },
-      { id: 14, resource: 'wood', number: 4 },
-      { id: 15, resource: 'sheep', number: 5 },
-      { id: 16, resource: 'brick', number: 9 },
-    ];
+    if (numPlayers < 4 || numPlayers > 6) {
+      console.error("Number of players must be between 4 and 6.");
+      return;
+    }
+
+    const resources = {
+      4: { wood: 4, brick: 3, sheep: 4, ore: 3, hay: 4, desert: 1 },
+      5: { wood: 6, brick: 5, sheep: 6, ore: 5, hay: 6, desert: 2 },
+      6: { wood: 6, brick: 5, sheep: 6, ore: 5, hay: 6, desert: 2 }
+    };
+
+    const layout = {
+      4: [3, 4, 5, 4, 3],
+      5: [3, 4, 5, 6, 5, 4, 3],
+      6: [3, 4, 5, 6, 5, 4, 3]
+    };
+
+    const resourceList = [];
+    for (const [resource, count] of Object.entries(resources[numPlayers])) {
+      for (let i = 0; i < count; i++) {
+        resourceList.push(resource);
+      }
+    }
+
+    const generatedMap = [];
+    let id = 1;
+    for (const row of layout[numPlayers]) {
+      const rowTiles = [];
+      for (let i = 0; i < row; i++) {
+        const resource = resourceList.splice(Math.floor(Math.random() * resourceList.length), 1)[0];
+        rowTiles.push({ id: id++, resource, number: Math.floor(Math.random() * 12) + 1 });
+      }
+      generatedMap.push(rowTiles);
+    }
+
     setMap(generatedMap);
   };
 
@@ -47,10 +63,14 @@ const MapGenerator = ({ numPlayers, noSameResources, noSameNumbers, scarceResour
         </div>
       ) : (
         <div className="map">
-          {map.map(tile => (
-            <div key={tile.id} className={`map-tile resource-${tile.resource}`}>
-              <p>{tile.resource}</p>
-              <p>{tile.number}</p>
+          {map.map((row, rowIndex) => (
+            <div key={rowIndex} className="map-row">
+              {row.map(tile => (
+                <div key={tile.id} className={`map-tile resource-${tile.resource}`}>
+                  <p>{tile.resource}</p>
+                  <p>{tile.number}</p>
+                </div>
+              ))}
             </div>
           ))}
         </div>
