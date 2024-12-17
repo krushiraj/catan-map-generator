@@ -1,40 +1,43 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react';
-import MapGenerator from './components/MapGenerator';
-import PlayerSetup from './components/PlayerSetup';
+import React, { useState } from "react";
+import PlayerSetup from "./components/PlayerSetup";
+import { CatanBoard } from "./components/Map";
+
+import type { NumberOfPlayers } from "./components/Map";
 
 const HomePage = () => {
-  const [numPlayers, setNumPlayers] = useState(4);
+  const [numPlayers, setNumPlayers] = useState<NumberOfPlayers>(4);
   const [noSameResources, setNoSameResources] = useState(false);
   const [noSameNumbers, setNoSameNumbers] = useState(false);
-  const [scarceResource, setScarceResource] = useState('');
+  const [scarceResource, setScarceResource] = useState("");
   const [surpriseMode, setSurpriseMode] = useState(false);
   const [players, setPlayers] = useState([]);
+  const [resetMap, setResetMap] = useState(false);
 
   const handleGenerateMap = () => {
-    // Logic to generate map
+    setResetMap(!resetMap);
   };
 
   const handleSurpriseMode = () => {
-    setSurpriseMode(true);
+    setSurpriseMode(!surpriseMode);
   };
 
-  const handleNumPlayersChange = (e) => {
+  const handleNumPlayersChange = (e: any) => {
     const value = parseInt(e.target.value);
     if (value >= 4 && value <= 6) {
-      setNumPlayers(value);
+      setNumPlayers(value as NumberOfPlayers);
     }
   };
 
   return (
-    <div className="container">
-      <h1 className="header">Catan Map Generator</h1>
+    <div className="container bg-blue-100">
+      <h1 className="header text-black">Catan Map Generator</h1>
       <div className="section">
-        <label>
+        <label className="text-black">
           Number of Players:
           <select
-            className="input"
+            className="input text-black"
             value={numPlayers}
             onChange={handleNumPlayersChange}
           >
@@ -45,10 +48,10 @@ const HomePage = () => {
         </label>
       </div>
       <div className="section">
-        <label>
+        <label className="text-black">
           No Same Resources Touch:
           <input
-            className="input"
+            className="input text-black"
             type="checkbox"
             checked={noSameResources}
             onChange={(e) => setNoSameResources(e.target.checked)}
@@ -56,10 +59,10 @@ const HomePage = () => {
         </label>
       </div>
       <div className="section">
-        <label>
+        <label className="text-black">
           No Same Numbers Touch:
           <input
-            className="input"
+            className="input text-black"
             type="checkbox"
             checked={noSameNumbers}
             onChange={(e) => setNoSameNumbers(e.target.checked)}
@@ -67,10 +70,10 @@ const HomePage = () => {
         </label>
       </div>
       <div className="section">
-        <label>
+        <label className="text-black">
           Scarce Resource:
           <select
-            className="input"
+            className="input text-black"
             value={scarceResource}
             onChange={(e) => setScarceResource(e.target.value)}
           >
@@ -95,14 +98,19 @@ const HomePage = () => {
         </button>
       </div>
       {surpriseMode && (
-        <PlayerSetup players={players} setPlayers={setPlayers} />
+        <PlayerSetup
+          players={players}
+          setPlayers={setPlayers}
+          numberOfPlayers={numPlayers}
+        />
       )}
-      <MapGenerator
-        numPlayers={numPlayers}
-        noSameResources={noSameResources}
-        noSameNumbers={noSameNumbers}
-        scarceResource={scarceResource}
-        surpriseMode={surpriseMode}
+      <CatanBoard
+        numberOfPlayer={numPlayers}
+        sameResourcesShouldTouch={!noSameResources}
+        sameNumberShouldTouch={!noSameNumbers}
+        invertTiles={players.length === numPlayers ? surpriseMode : false}
+        scarceResource="desert"
+        reset={resetMap}
         players={players}
       />
     </div>
