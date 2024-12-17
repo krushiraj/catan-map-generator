@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,12 +9,6 @@ import { randomiser } from "../utils";
 
 // Define the types of resources
 type Resource = "wood" | "brick" | "ore" | "hay" | "sheep" | "desert";
-
-// Define the structure of a hex
-interface Hex {
-  resource: Resource;
-  number?: number;
-}
 
 export type NumberOfPlayers = 4 | 5 | 6;
 
@@ -869,7 +864,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
                 playerTurns[players.length as NumberOfPlayers][playerTurn]
               ].name
             }
-            's turn
+            &apos;s turn
           </p>
           <button
             onClick={

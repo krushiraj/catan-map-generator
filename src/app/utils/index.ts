@@ -1,4 +1,5 @@
-export const randomiser = (arr: any[]) => {
+// eslint-disable @typescript-eslint/no-explicit-any
+export const randomiser = <T>(arr: T[]) => {
   let currentIndex = arr.length;
   let randomIndex;
   while (currentIndex !== 0) {

@@ -10,6 +10,8 @@ const page = () => {
         sameNumberShouldTouch={false}
         sameResourcesShouldTouch={false}
         scarceResource="desert"
+        players={[]}
+        reset={false}
       />
     </div>
   );

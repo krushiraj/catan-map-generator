@@ -23,7 +23,7 @@ const HomePage = () => {
     setSurpriseMode(!surpriseMode);
   };
 
-  const handleNumPlayersChange = (e: any) => {
+  const handleNumPlayersChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(e.target.value);
     if (value >= 4 && value <= 6) {
       setNumPlayers(value as NumberOfPlayers);
