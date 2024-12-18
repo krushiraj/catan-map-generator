@@ -14,7 +14,7 @@ export const Vertex: React.FC<VertexProps> = ({ x, y, onClick, color }) => {
         cx={x}
         cy={y}
         r={0.3}
-        fill={color || 'gray'}
+        fill={color || '#efefef'}
         stroke="black"
         strokeWidth={0.05}
         onClick={() => onClick(x, y)}

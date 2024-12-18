@@ -16,7 +16,7 @@ export const Edge: React.FC<EdgeProps> = ({ x1, y1, x2, y2, onClick, color }) =>
       y1={y1}
       x2={x2}
       y2={y2}
-      stroke={color || '  gray'}
+      stroke={color || '#efefef'}
       strokeWidth={0.2}
       strokeLinecap="round"
       onClick={() => onClick(x1, y1, x2, y2)}

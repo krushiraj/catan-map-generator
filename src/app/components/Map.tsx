@@ -479,7 +479,12 @@ const createInitialBoard = (
     });
 
     if (!resourceForHex) {
-      return hexPositions;
+      return recursivelyAssignResourceAndNumber(
+        hexPositions,
+        0,
+        randomiser(resources),
+        randomiser(numbers)
+      );
     }
 
     const resourceIndex = availableResources.indexOf(resourceForHex);
@@ -493,7 +498,12 @@ const createInitialBoard = (
       }) || 0;
 
     if (availableNumbers.length && !numberForHex) {
-      return hexPositions;
+      return recursivelyAssignResourceAndNumber(
+        hexPositions,
+        0,
+        randomiser(resources),
+        randomiser(numbers)
+      );;
     }
 
     const numberIndex =
@@ -525,11 +535,7 @@ const createInitialBoard = (
       newAvailableNumbers
     );
 
-    if (
-      idx === 0 &&
-      !result.every((hex) => hex.resource) &&
-      availableNumbers.length === 0
-    ) {
+    if (!result.every((hex) => hex.resource)) {
       console.log("Resetting");
       return recursivelyAssignResourceAndNumber(
         hexPositions,
@@ -743,7 +749,14 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const color = [...houses]
       .find((house) => house.startsWith(`${x},${y}`))
       ?.split("#")[1];
-    return <Vertex x={x} y={y} onClick={handleVertexClick} color={color ? `#${color}` : undefined} />;
+    return (
+      <Vertex
+        x={x}
+        y={y}
+        onClick={handleVertexClick}
+        color={color ? `#${color}` : undefined}
+      />
+    );
   };
 
   const DrawEdge = ({

@@ -14,12 +14,21 @@ interface HexTileProps {
 
 const resourceColors: { [key: string]: string } = {
   wood: "#77dd77",
-  brick: "#ff6961",
-  ore: "#cfcfc4",
+  brick: "#ff9999",
+  ore: "#ababab",
   hay: "#fdfd96",
   sheep: "#c1e1c1",
-  desert: "#F4A460",
+  desert: "#F4D3A0",
   inverted: "#40E0D0",
+};
+
+const icons: { [key: string]: string } = {
+  wood: "🪵",
+  brick: "🧱",
+  ore: "🪨",
+  hay: "🌾",
+  sheep: "🐏",
+  desert: "🏜️🐫",
 };
 
 export const HexTile: React.FC<HexTileProps> = ({
@@ -54,9 +63,9 @@ export const HexTile: React.FC<HexTileProps> = ({
       {number && (
         <text
           x="0"
-          y="0.3"
+          y="0.5"
           textAnchor="middle"
-          fontSize="0.4"
+          fontSize="0.3"
           fill="black"
           fontWeight="bold"
         >
@@ -65,6 +74,9 @@ export const HexTile: React.FC<HexTileProps> = ({
       )}
       <text x="0" y="-0.3" textAnchor="middle" fontSize="0.25" fill="black">
         {!reveal ? "" : resource}
+      </text>
+      <text x="0" y="0.1" textAnchor="middle" fontSize="0.3" fill="black">
+        {!reveal ? "" : icons[resource]}
       </text>
     </g>
   );
