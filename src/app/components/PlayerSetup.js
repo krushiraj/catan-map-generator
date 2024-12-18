@@ -24,6 +24,16 @@ const PlayerSetup = ({ players, setPlayers, numberOfPlayers }) => {
     setPlayerColor("");
   };
 
+  const colorNames = {
+    "#ff0000": "Red",
+    "#0000ff": "Blue",
+    "#008000": "Green",
+    "#a52a2a": "Brown",
+    "#ffa500": "Orange",
+    "#ffffff": "White",
+    "#ffff00": "Yellow",
+  };
+
   return (
     <div>
       <h2 className="text-black">Player Setup</h2>
@@ -48,13 +58,13 @@ const PlayerSetup = ({ players, setPlayers, numberOfPlayers }) => {
             onChange={(e) => setPlayerColor(e.target.value)}
           >
             <option value="">Select Color</option>
-            <option value="red">Red</option>
-            <option value="blue">Blue</option>
-            <option value="green">Green</option>
-            <option value="brown">Brown</option>
-            <option value="orange">Orange</option>
-            <option value="white">White</option>
-            <option value="yellow">Yellow</option>
+            <option value="#ff0000">Red</option>
+            <option value="#0000ff">Blue</option>
+            <option value="#008000">Green</option>
+            <option value="#a52a2a">Brown</option>
+            <option value="#ffa500">Orange</option>
+            <option value="#ffffff">White</option>
+            <option value="#ffff00">Yellow</option>
           </select>
         </label>
       </div>
@@ -67,8 +77,12 @@ const PlayerSetup = ({ players, setPlayers, numberOfPlayers }) => {
         <h3 className="text-black">Players</h3>
         <ul>
           {players.map((player, index) => (
-            <li className="text-black" key={index}>
-              {player.name} - {player.color}
+            <li
+              className="text-black"
+              key={index}
+              style={{ color: player.color }}
+            >
+              {player.name} - {colorNames[player.color]}
             </li>
           ))}
         </ul>

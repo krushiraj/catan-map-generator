@@ -630,7 +630,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const currentPlayer =
       players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
 
-    const key = `${x},${y}#${currentPlayer.color}`;
+    const key = `${x},${y}${currentPlayer.color}`;
 
     let addingHouse = true;
 
@@ -675,7 +675,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const currentPlayer =
       players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
 
-    const key = `${x1},${y1}-${x2},${y2}#${currentPlayer.color}`;
+    const key = `${x1},${y1}-${x2},${y2}${currentPlayer.color}`;
 
     if (!currentPlayer) {
       return;
@@ -743,7 +743,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const color = [...houses]
       .find((house) => house.startsWith(`${x},${y}`))
       ?.split("#")[1];
-    return <Vertex x={x} y={y} onClick={handleVertexClick} color={color} />;
+    return <Vertex x={x} y={y} onClick={handleVertexClick} color={color ? `#${color}` : undefined} />;
   };
 
   const DrawEdge = ({
@@ -768,7 +768,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
         x2={x2}
         y2={y2}
         onClick={handleEdgeClick}
-        color={color}
+        color={color ? `#${color}` : undefined}
       />
     );
   };

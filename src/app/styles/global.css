@@ -11,6 +11,8 @@
   --player-orange: #ffa500;
   --player-white: #ffffff;
   --player-yellow: #ffff00;
+  --pastel-sand: #F4A460;
+  --sea-blue: #40E0D0;
 }
 
 .resource-brick {
@@ -36,6 +38,14 @@
 .resource-sheep {
   background-color: var(--pastel-light-green);
   background-image: url('/icons/sheep.svg');
+}
+
+.resource-desert {
+  background-color: var(--pastel-sand);
+}
+
+.resource-inverted {
+  background-color: var(--sea-blue);
 }
 
 .player-red {
