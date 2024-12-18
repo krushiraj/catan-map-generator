@@ -630,7 +630,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const currentPlayer =
       players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
 
-    const key = `${x},${y}#${currentPlayer.color}`;
+    const key = `${x},${y}${currentPlayer.color}`;
 
     let addingHouse = true;
 
@@ -675,7 +675,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const currentPlayer =
       players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
 
-    const key = `${x1},${y1}-${x2},${y2}#${currentPlayer.color}`;
+    const key = `${x1},${y1}-${x2},${y2}${currentPlayer.color}`;
 
     if (!currentPlayer) {
       return;
