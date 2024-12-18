@@ -48,13 +48,13 @@ const PlayerSetup = ({ players, setPlayers, numberOfPlayers }) => {
             onChange={(e) => setPlayerColor(e.target.value)}
           >
             <option value="">Select Color</option>
-            <option value="var(--player-red)">Red</option>
-            <option value="var(--player-blue)">Blue</option>
-            <option value="var(--player-green)">Green</option>
-            <option value="var(--player-brown)">Brown</option>
-            <option value="var(--player-orange)">Orange</option>
-            <option value="var(--player-white)">White</option>
-            <option value="var(--player-yellow)">Yellow</option>
+            <option value="#ff0000">Red</option>
+            <option value="#0000ff">Blue</option>
+            <option value="#008000">Green</option>
+            <option value="#a52a2a">Brown</option>
+            <option value="#ffa500">Orange</option>
+            <option value="#ffffff">White</option>
+            <option value="#ffff00">Yellow</option>
           </select>
         </label>
       </div>
