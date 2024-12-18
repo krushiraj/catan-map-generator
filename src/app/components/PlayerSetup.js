@@ -24,6 +24,16 @@ const PlayerSetup = ({ players, setPlayers, numberOfPlayers }) => {
     setPlayerColor("");
   };
 
+  const colorNames = {
+    "#ff0000": "Red",
+    "#0000ff": "Blue",
+    "#008000": "Green",
+    "#a52a2a": "Brown",
+    "#ffa500": "Orange",
+    "#ffffff": "White",
+    "#ffff00": "Yellow",
+  };
+
   return (
     <div>
       <h2 className="text-black">Player Setup</h2>
@@ -67,8 +77,12 @@ const PlayerSetup = ({ players, setPlayers, numberOfPlayers }) => {
         <h3 className="text-black">Players</h3>
         <ul>
           {players.map((player, index) => (
-            <li className="text-black" key={index}>
-              {player.name} - {player.color}
+            <li
+              className="text-black"
+              key={index}
+              style={{ color: player.color }}
+            >
+              {player.name} - {colorNames[player.color]}
             </li>
           ))}
         </ul>

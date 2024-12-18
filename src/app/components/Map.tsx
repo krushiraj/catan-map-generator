@@ -743,7 +743,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const color = [...houses]
       .find((house) => house.startsWith(`${x},${y}`))
       ?.split("#")[1];
-    return <Vertex x={x} y={y} onClick={handleVertexClick} color={color} />;
+    return <Vertex x={x} y={y} onClick={handleVertexClick} color={`#${color}`} />;
   };
 
   const DrawEdge = ({
@@ -768,7 +768,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
         x2={x2}
         y2={y2}
         onClick={handleEdgeClick}
-        color={color}
+        color={`#${color}`}
       />
     );
   };
