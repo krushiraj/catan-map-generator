@@ -13,13 +13,13 @@ interface HexTileProps {
 }
 
 const resourceColors: { [key: string]: string } = {
-  wood: "#228B22",
-  brick: "#B22222",
-  ore: "#708090",
-  hay: "#FFD700",
-  sheep: "#90EE90",
-  desert: "#F4A460",
-  inverted: "#BABABA",
+  wood: "var(--pastel-green)",
+  brick: "var(--pastel-red)",
+  ore: "var(--pastel-gray)",
+  hay: "var(--pastel-yellow)",
+  sheep: "var(--pastel-light-green)",
+  desert: "var(--pastel-sand)",
+  inverted: "var(--sea-blue)",
 };
 
 export const HexTile: React.FC<HexTileProps> = ({
