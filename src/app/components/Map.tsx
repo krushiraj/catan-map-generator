@@ -640,6 +640,15 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
 
     let addingHouse = true;
 
+    // Check distance between new house and existing houses
+    for (const house of houses) {
+      const [houseX, houseY] = house.split(",").map(Number);
+      const distance = Math.sqrt((houseX - x) ** 2 + (houseY - y) ** 2);
+      if (distance <= 1) {
+        return; // Do not add the house if it's too close to an existing house
+      }
+    }
+
     setHouses((prevHouses) => {
       const newHouses = new Set(prevHouses);
       if (newHouses.has(key)) {
@@ -705,6 +714,18 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       ].house
     ) {
       return;
+    }
+
+    // Check if one of the ends of the edge aligns with the last clicked vertex/house by the player
+    const lastHouse = playerPlacements[currentPlayer.name][
+      playerPlacements[currentPlayer.name].length - 1
+    ].house;
+    const [lastHouseX, lastHouseY] = lastHouse.split(",").map(Number);
+    if (
+      (x1 !== lastHouseX || y1 !== lastHouseY) &&
+      (x2 !== lastHouseX || y2 !== lastHouseY)
+    ) {
+      return; // Do not add the road if it doesn't align with the last clicked house
     }
 
     let addingRoad = true;
