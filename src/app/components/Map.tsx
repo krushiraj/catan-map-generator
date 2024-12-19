@@ -6,6 +6,7 @@ import { HexTile } from "./HexTile";
 import { Vertex } from "./Vertex";
 import { Edge } from "./Edge";
 import { randomiser } from "../utils";
+import { TriangleTile } from "./TriangleTile";
 
 // Define the types of resources
 type Resource = "wood" | "brick" | "ore" | "hay" | "sheep" | "desert";
@@ -21,6 +22,133 @@ interface HexPosition {
   resource?: Resource;
   number?: number;
 }
+
+const portPositions = {
+  4: [
+    {
+      x: -0.7,
+      y: -4.7,
+      resource: "all",
+      rotation: -30,
+    },
+    {
+      x: 2.7,
+      y: -4.6,
+      resource: "all",
+      rotation: 30,
+    },
+    {
+      x: -3.7,
+      y: -2.9,
+      resource: "sheep",
+      rotation: -30,
+    },
+    {
+      x: 4.4,
+      y: -1.7,
+      resource: "brick",
+      rotation: -30,
+    },
+    {
+      x: -5.4,
+      y: 0,
+      resource: "all",
+      rotation: -90,
+    },
+    {
+      x: 4.4,
+      y: 1.7  ,
+      resource: "wood",
+      rotation: 90,
+    },
+    {
+      x: -3.7,
+      y: 3  ,
+      resource: "ore",
+      rotation: -30,
+    },
+    {
+      x: -0.7,
+      y: 4.7  ,
+      resource: "hay",
+      rotation: -30,
+    },
+    {
+      x: 2.7,
+      y: 4.7  ,
+      resource: "all",
+      rotation: 30,
+    },
+  ],
+  6: [
+    {
+      x: -2.7,
+      y: -6.4,
+      resource: "all",
+      rotation: -30,
+    },
+    {
+      x: 0.7,
+      y: -6.4,
+      resource: "sheep",
+      rotation: 30,
+    },
+    {
+      x: 3.6,
+      y: -4.7,
+      resource: "all",
+      rotation: 30,
+    },
+    {
+      x: -5.4,
+      y: -1.7,
+      resource: "ore",
+      rotation: 30,
+    },
+    {
+      x: -5.5,
+      y: 1.7,
+      resource: "all",
+      rotation: 30,
+    },
+    {
+      x: -4.4,
+      y: 3.4,
+      resource: "hay",
+      rotation: 30,
+    },
+    {
+      x: -2.7,
+      y: 6.5,
+      resource: "all",
+      rotation: -30,
+    },
+    {
+      x: 0.7,
+      y: 6.5,
+      resource: "wood",
+      rotation: 30,
+    },
+    {
+      x: 3.4,
+      y: 5.2,
+      resource: "all",
+      rotation: 90,
+    },
+    {
+      x: 4.65,
+      y: 3.05,
+      resource: "brick",
+      rotation: 30,
+    },
+    {
+      x: 6.4,
+      y: 0,
+      resource: "all",
+      rotation: 90,
+    },
+  ],
+};
 
 // Helper function to create the initial board layout
 const createInitialBoard = (
@@ -503,7 +631,7 @@ const createInitialBoard = (
         0,
         randomiser(resources),
         randomiser(numbers)
-      );;
+      );
     }
 
     const numberIndex =
@@ -912,10 +1040,20 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
         </>
       )}
       <svg
-        viewBox={numberOfPlayer === 4 ? "-6 -6 12 12" : "-7 -7 14 14"}
-        width="800"
-        height="800"
+        viewBox={numberOfPlayer === 4 ? "-6 -6 12 12" : "-8 -8 16 16"}
+        width="1200"
+        height="1200"
       >
+        {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
+          <React.Fragment key={index}>
+            <TriangleTile
+              x={port.x}
+              y={port.y}
+              resource={port.resource}
+              rotation={port.rotation}
+            />
+          </React.Fragment>
+        ))}
         {board.map((hex, index) => (
           <React.Fragment key={`${index}-${hex.x},${hex.y}`}>
             <HexTile

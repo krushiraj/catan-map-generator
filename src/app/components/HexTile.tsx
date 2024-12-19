@@ -12,7 +12,7 @@ interface HexTileProps {
   reveal?: boolean;
 }
 
-const resourceColors: { [key: string]: string } = {
+export const resourceColors: { [key: string]: string } = {
   wood: "#77dd77",
   brick: "#ff9999",
   ore: "#ababab",
@@ -20,15 +20,17 @@ const resourceColors: { [key: string]: string } = {
   sheep: "#c1e1c1",
   desert: "#F4D3A0",
   inverted: "#40E0D0",
+  all: "#F4D3A0",
 };
 
-const icons: { [key: string]: string } = {
+export const icons: { [key: string]: string } = {
   wood: "🪵",
   brick: "🧱",
   ore: "🪨",
   hay: "🌾",
   sheep: "🐏",
   desert: "🏜️🐫",
+  all: "❓"
 };
 
 export const HexTile: React.FC<HexTileProps> = ({
