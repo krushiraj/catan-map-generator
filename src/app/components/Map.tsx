@@ -57,25 +57,25 @@ const portPositions = {
     },
     {
       x: 4.4,
-      y: 1.7  ,
+      y: 1.7,
       resource: "wood",
       rotation: 90,
     },
     {
       x: -3.7,
-      y: 3  ,
+      y: 3,
       resource: "ore",
       rotation: -30,
     },
     {
       x: -0.7,
-      y: 4.7  ,
+      y: 4.7,
       resource: "hay",
       rotation: -30,
     },
     {
       x: 2.7,
-      y: 4.7  ,
+      y: 4.7,
       resource: "all",
       rotation: 30,
     },
@@ -766,6 +766,15 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
 
     const key = `${x},${y}${currentPlayer.color}`;
 
+    for (const house of [...houses].filter((house: string) => house !== key)) {
+      const [houseX, houseY] = house.split("#")[0].split(",").map(Number);
+      console.log({ houseX, houseY, x, y, house });
+      const distance = Math.sqrt((houseX - x) ** 2 + (houseY - y) ** 2);
+      if (distance < 1.2) {
+        return;
+      }
+    }
+
     let addingHouse = true;
 
     setHouses((prevHouses) => {
@@ -810,6 +819,26 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
 
     const key = `${x1},${y1}-${x2},${y2}${currentPlayer.color}`;
+
+    const lastHouse =
+      playerPlacements[currentPlayer.name][
+        playerPlacements[currentPlayer.name].length - 1
+      ].house;
+    const [lastHouseX, lastHouseY] = lastHouse
+      .split("#")[0]
+      .split(",")
+      .map(Number);
+
+    const distance1 = Math.sqrt(
+      (x1 - lastHouseX) ** 2 + (y1 - lastHouseY) ** 2
+    );
+    const distance2 = Math.sqrt(
+      (x2 - lastHouseX) ** 2 + (y2 - lastHouseY) ** 2
+    );
+
+    if (distance1 > 0.1 && distance2 > 0.1) {
+      return; // Do not add the road if it doesn't align with the last clicked house
+    }
 
     if (!currentPlayer) {
       return;
