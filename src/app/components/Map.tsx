@@ -1017,7 +1017,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   }
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen bg-blue-100">
+    <div className="flex flex-col justify-center items-center bg-blue-100">
       {invertTiles && (
         <>
           <h1 className="text-4xl text-black">Inverted Tiles</h1>
@@ -1070,8 +1070,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       )}
       <svg
         viewBox={numberOfPlayer === 4 ? "-6 -6 12 12" : "-8 -8 16 16"}
-        width="1200"
-        height="1200"
+        preserveAspectRatio="xMidYMid meet"
       >
         {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
           <React.Fragment key={index}>

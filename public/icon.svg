@@ -1,0 +1,515 @@
+<svg viewBox="-6 -6 12 12" width="1200" height="1200">
+  <g transform="translate(-0.7, -4.7) rotate(-30)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#F4D3A0" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(30)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">❓</text>
+  </g>
+  <g transform="translate(2.7, -4.6) rotate(30)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#F4D3A0" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(-30)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">❓</text>
+  </g>
+  <g transform="translate(-3.7, -2.9) rotate(-30)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#c1e1c1" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(30)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">🐏</text>
+  </g>
+  <g transform="translate(4.4, -1.7) rotate(-30)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#ff9999" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(30)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">🧱</text>
+  </g>
+  <g transform="translate(-5.4, 0) rotate(-90)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#F4D3A0" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(90)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">❓</text>
+  </g>
+  <g transform="translate(4.4, 1.7) rotate(90)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#77dd77" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(-90)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">🪵</text>
+  </g>
+  <g transform="translate(-3.7, 3) rotate(-30)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#ababab" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(30)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">🪨</text>
+  </g>
+  <g transform="translate(-0.7, 4.7) rotate(-30)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#fdfd96" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(30)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">🌾</text>
+  </g>
+  <g transform="translate(2.7, 4.7) rotate(30)">
+    <polygon points="0,-0.75 0.6495,0.375 -0.6495,0.375" fill="#F4D3A0" stroke="black" stroke-width="0.05"></polygon>
+    <text transform="rotate(-30)" x="0" y="0" text-anchor="middle" font-size="0.3" fill="black">❓</text>
+  </g>
+  <g transform="translate(-2, -3.46) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#77dd77"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">3</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">wood</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🪵</text>
+  </g>
+  <line x1="-2" y1="-4.633" x2="-1.01" y2="-4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-2.99" y1="-2.8735" x2="-2.99" y2="-4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-2.99" y1="-4.0465" x2="-2" y2="-4.633" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-2" cy="-4.633" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-2.99" cy="-4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(0, -3.46) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#c1e1c1"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">11</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">sheep</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🐏</text>
+  </g>
+  <line x1="0" y1="-4.633" x2="0.99" y2="-4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-0.99" y1="-2.8735" x2="-0.99" y2="-4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-0.99" y1="-4.0465" x2="0" y2="-4.633" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="0" cy="-4.633" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-0.99" cy="-4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(2, -3.46) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#ababab"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">2</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">ore</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🪨</text>
+  </g>
+  <line x1="2" y1="-4.633" x2="2.99" y2="-4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2.99" y1="-4.0465" x2="2.99" y2="-2.8735" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="1.01" y1="-2.8735" x2="1.01" y2="-4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="1.01" y1="-4.0465" x2="2" y2="-4.633" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="2" cy="-4.633" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="2.99" cy="-4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="1.01" cy="-4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(-3, -1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#77dd77"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">3</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">wood</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🪵</text>
+  </g>
+  <line x1="-3" y1="-2.903" x2="-2.01" y2="-2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-3.99" y1="-1.1435" x2="-3.99" y2="-2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-3.99" y1="-2.3165" x2="-3" y2="-2.903" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-3" cy="-2.903" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-3.99" cy="-2.3165" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(-1, -1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#fdfd96"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">6</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">hay</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🌾</text>
+  </g>
+  <line x1="-1" y1="-2.903" x2="-0.010000000000000009" y2="-2.3165" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-1.99" y1="-1.1435" x2="-1.99" y2="-2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-1.99" y1="-2.3165" x2="-1" y2="-2.903" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-1" cy="-2.903" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-1.99" cy="-2.3165" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(1, -1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#ff9999"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">4</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">brick</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🧱</text>
+  </g>
+  <line x1="1" y1="-2.903" x2="1.99" y2="-2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="0.010000000000000009" y1="-1.1435" x2="0.010000000000000009" y2="-2.3165" stroke="#efefef"
+    stroke-width="0.2" stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="0.010000000000000009" y1="-2.3165" x2="1" y2="-2.903" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="1" cy="-2.903" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="0.010000000000000009" cy="-2.3165" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05"
+      class="cursor-pointer"></circle>
+  </g>
+  <g transform="translate(3, -1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#c1e1c1"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">4</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">sheep</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🐏</text>
+  </g>
+  <line x1="3" y1="-2.903" x2="3.99" y2="-2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="3.99" y1="-2.3165" x2="3.99" y2="-1.1435" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2.01" y1="-1.1435" x2="2.01" y2="-2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2.01" y1="-2.3165" x2="3" y2="-2.903" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="3" cy="-2.903" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="3.99" cy="-2.3165" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="2.01" cy="-2.3165" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(-4, 0) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#c1e1c1"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">10</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">sheep</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🐏</text>
+  </g>
+  <line x1="-4" y1="-1.173" x2="-3.01" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-4" y1="1.173" x2="-4.99" y2="0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-4.99" y1="0.5865" x2="-4.99" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-4.99" y1="-0.5865" x2="-4" y2="-1.173" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-4" cy="-1.173" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-4.99" cy="0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-4.99" cy="-0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(-2, 0) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#fdfd96"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">12</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">hay</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🌾</text>
+  </g>
+  <line x1="-2" y1="-1.173" x2="-1.01" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-2.99" y1="0.5865" x2="-2.99" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-2.99" y1="-0.5865" x2="-2" y2="-1.173" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-2" cy="-1.173" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-2.99" cy="-0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(0, 0) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#F4D3A0"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">desert</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🏜️🐫</text>
+  </g>
+  <line x1="0" y1="-1.173" x2="0.99" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-0.99" y1="0.5865" x2="-0.99" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-0.99" y1="-0.5865" x2="0" y2="-1.173" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="0" cy="-1.173" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-0.99" cy="-0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(2, 0) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#ababab"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">5</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">ore</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🪨</text>
+  </g>
+  <line x1="2" y1="-1.173" x2="2.99" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="1.01" y1="0.5865" x2="1.01" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="1.01" y1="-0.5865" x2="2" y2="-1.173" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="2" cy="-1.173" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="1.01" cy="-0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(4, 0) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#c1e1c1"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">5</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">sheep</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🐏</text>
+  </g>
+  <line x1="4" y1="-1.173" x2="4.99" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="4.99" y1="-0.5865" x2="4.99" y2="0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="4.99" y1="0.5865" x2="4" y2="1.173" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="3.01" y1="0.5865" x2="3.01" y2="-0.5865" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="3.01" y1="-0.5865" x2="4" y2="-1.173" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="4" cy="-1.173" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="4.99" cy="-0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="4.99" cy="0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="3.01" cy="-0.5865" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(-3, 1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#fdfd96"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">8</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">hay</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🌾</text>
+  </g>
+  <line x1="-3" y1="0.5569999999999999" x2="-2.01" y2="1.1435" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-3" y1="2.903" x2="-3.99" y2="2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-3.99" y1="2.3165" x2="-3.99" y2="1.1435" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-3.99" y1="1.1435" x2="-3" y2="0.5569999999999999" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-3" cy="0.5569999999999999" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05"
+      class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-3.99" cy="2.3165" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-3.99" cy="1.1435" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(-1, 1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#77dd77"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">8</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">wood</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🪵</text>
+  </g>
+  <line x1="-1" y1="0.5569999999999999" x2="-0.010000000000000009" y2="1.1435" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-1.99" y1="2.3165" x2="-1.99" y2="1.1435" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-1.99" y1="1.1435" x2="-1" y2="0.5569999999999999" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-1" cy="0.5569999999999999" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05"
+      class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-1.99" cy="1.1435" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(1, 1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#77dd77"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">11</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">wood</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🪵</text>
+  </g>
+  <line x1="1" y1="0.5569999999999999" x2="1.99" y2="1.1435" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="0.010000000000000009" y1="2.3165" x2="0.010000000000000009" y2="1.1435" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="0.010000000000000009" y1="1.1435" x2="1" y2="0.5569999999999999" stroke="#efefef" stroke-width="0.2"
+    stroke-linecap="round" class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="1" cy="0.5569999999999999" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05"
+      class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="0.010000000000000009" cy="1.1435" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05"
+      class="cursor-pointer"></circle>
+  </g>
+  <g transform="translate(3, 1.73) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#ff9999"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">10</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">brick</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🧱</text>
+  </g>
+  <line x1="3" y1="0.5569999999999999" x2="3.99" y2="1.1435" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="3.99" y1="1.1435" x2="3.99" y2="2.3165" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="3.99" y1="2.3165" x2="3" y2="2.903" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2.01" y1="2.3165" x2="2.01" y2="1.1435" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2.01" y1="1.1435" x2="3" y2="0.5569999999999999" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="3" cy="0.5569999999999999" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05"
+      class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="3.99" cy="1.1435" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="3.99" cy="2.3165" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="2.01" cy="1.1435" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(-2, 3.46) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#ababab"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">6</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">ore</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🪨</text>
+  </g>
+  <line x1="-2" y1="2.287" x2="-1.01" y2="2.8735" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-1.01" y1="4.0465" x2="-2" y2="4.633" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-2" y1="4.633" x2="-2.99" y2="4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-2.99" y1="4.0465" x2="-2.99" y2="2.8735" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-2.99" y1="2.8735" x2="-2" y2="2.287" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="-2" cy="2.287" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-1.01" cy="4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-2" cy="4.633" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-2.99" cy="4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-2.99" cy="2.8735" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(0, 3.46) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#ff9999"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">9</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">brick</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🧱</text>
+  </g>
+  <line x1="0" y1="2.287" x2="0.99" y2="2.8735" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="0.99" y1="4.0465" x2="0" y2="4.633" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="0" y1="4.633" x2="-0.99" y2="4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-0.99" y1="4.0465" x2="-0.99" y2="2.8735" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="-0.99" y1="2.8735" x2="0" y2="2.287" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="0" cy="2.287" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="0.99" cy="4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="0" cy="4.633" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-0.99" cy="4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="-0.99" cy="2.8735" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g transform="translate(2, 3.46) scale(1)">
+    <polygon points="0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5" transform="rotate(60)" fill="#fdfd96"
+      stroke="black" stroke-width="0.025"></polygon><text x="0" y="0.5" text-anchor="middle" font-size="0.3"
+      fill="black" font-weight="bold">9</text><text x="0" y="-0.3" text-anchor="middle" font-size="0.25"
+      fill="black">hay</text><text x="0" y="0.1" text-anchor="middle" font-size="0.3" fill="black">🌾</text>
+  </g>
+  <line x1="2" y1="2.287" x2="2.99" y2="2.8735" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2.99" y1="2.8735" x2="2.99" y2="4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2.99" y1="4.0465" x2="2" y2="4.633" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="2" y1="4.633" x2="1.01" y2="4.0465" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="1.01" y1="4.0465" x2="1.01" y2="2.8735" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <line x1="1.01" y1="2.8735" x2="2" y2="2.287" stroke="#efefef" stroke-width="0.2" stroke-linecap="round"
+    class="cursor-pointer" style="z-index: 10;"></line>
+  <g style="z-index: 20;">
+    <circle cx="2" cy="2.287" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="2.99" cy="2.8735" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="2.99" cy="4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="2" cy="4.633" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer"></circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="1.01" cy="4.0465" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+  <g style="z-index: 20;">
+    <circle cx="1.01" cy="2.8735" r="0.3" fill="#efefef" stroke="black" stroke-width="0.05" class="cursor-pointer">
+    </circle>
+  </g>
+</svg>
