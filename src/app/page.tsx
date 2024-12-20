@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import PlayerSetup from "./components/PlayerSetup";
 import { CatanBoard } from "./components/Map";
 
-import type { NumberOfPlayers } from "./components/Map";
+import type { NumberOfPlayers, Resource } from "./components/Map";
 // import InstallPrompt from "./components/InstallPrompt";
 
 const HomePage = () => {
@@ -72,7 +72,16 @@ const HomePage = () => {
             <select
               className="input text-black"
               value={scarceResource}
-              onChange={(e) => setScarceResource(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value === "random") {
+                  const resources = ["brick", "wheat", "ore", "wood", "sheep"];
+                  setScarceResource(
+                    resources[Math.floor(Math.random() * resources.length)]
+                  );
+                  return;
+                }
+                setScarceResource(e.target.value);
+              }}
             >
               <option value="">None</option>
               <option value="brick">Brick</option>
@@ -102,15 +111,20 @@ const HomePage = () => {
           sameResourcesShouldTouch={!noSameResources}
           sameNumberShouldTouch={!noSameNumbers}
           invertTiles={players.length === numPlayers ? surpriseMode : false}
-          scarceResource="desert"
+          scarceResource={scarceResource as Resource}
           reset={resetMap}
           players={players}
         />
       </div>
       <footer className="footer text-black bg-blue-200 w-full p-4 text-center">
         Made with ❤️ for Catan by{" "}
-        <a className="underline hover:text-red-500" href="https://krushiraj.github.io">Krushi Raj Tula</a> - ©{" "}
-        {new Date().getFullYear()}
+        <a
+          className="underline hover:text-red-500"
+          href="https://krushiraj.github.io"
+        >
+          Krushi Raj Tula
+        </a>{" "}
+        - © {new Date().getFullYear()}
       </footer>
     </>
   );

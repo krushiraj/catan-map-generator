@@ -9,7 +9,7 @@ import { randomiser } from "../utils";
 import { TriangleTile } from "./TriangleTile";
 
 // Define the types of resources
-type Resource = "wood" | "brick" | "ore" | "hay" | "sheep" | "desert";
+export type Resource = "wood" | "brick" | "ore" | "hay" | "sheep" | "desert";
 
 export type NumberOfPlayers = 4 | 5 | 6;
 
@@ -565,16 +565,16 @@ const createInitialBoard = (
           },
         ];
 
-  const probabilities = {
-    2: 1,
-    3: 2,
-    4: 3,
-    5: 4,
+  const probabilities: Record<number, number> = {
     6: 5,
     8: 5,
     9: 4,
+    5: 4,
+    4: 3,
     10: 3,
+    3: 2,
     11: 2,
+    2: 1,
     12: 1,
   };
 
@@ -617,13 +617,45 @@ const createInitialBoard = (
 
     const resourceIndex = availableResources.indexOf(resourceForHex);
 
-    const numberForHex =
+    let numberForHex =
       availableNumbers.find((number) => {
         if (!sameNumberShouldTouch) {
           return !adjacentNumbers.includes(number);
         }
         return true;
       }) || 0;
+
+    if (scarceResource && resourceForHex === scarceResource) {
+      // check if numberForHex has least probability among availableNumbers
+      // if not, find the number with least probability
+      // swap the number with numberForHex and update availableNumbers
+      const probabilitiesForAvailableNumbers = availableNumbers.map(
+        (number) => probabilities[number]
+      );
+      const probabilityForNumberForHex = probabilities[numberForHex];
+      const minProbability = Math.min(...probabilitiesForAvailableNumbers);
+
+      if (minProbability > 2 && probabilityForNumberForHex > 2) {
+        return recursivelyAssignResourceAndNumber(
+          hexPositions,
+          0,
+          randomiser(resources),
+          randomiser(numbers)
+        );
+      }
+
+      if (probabilityForNumberForHex > minProbability) {
+        const minProbabilityNumber = availableNumbers.find(
+          (number) => probabilities[number] === minProbability
+        );
+
+        if (minProbabilityNumber && minProbabilityNumber !== numberForHex) {
+          numberForHex = minProbabilityNumber;
+          const numberIndex = availableNumbers.indexOf(numberForHex);
+          availableNumbers[numberIndex] = numberForHex;
+        }
+      }
+    }
 
     if (availableNumbers.length && !numberForHex) {
       return recursivelyAssignResourceAndNumber(
@@ -664,7 +696,6 @@ const createInitialBoard = (
     );
 
     if (!result.every((hex) => hex.resource)) {
-      console.log("Resetting");
       return recursivelyAssignResourceAndNumber(
         hexPositions,
         0,
@@ -768,7 +799,6 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
 
     for (const house of [...houses].filter((house: string) => house !== key)) {
       const [houseX, houseY] = house.split("#")[0].split(",").map(Number);
-      console.log({ houseX, houseY, x, y, house });
       const distance = Math.sqrt((houseX - x) ** 2 + (houseY - y) ** 2);
       if (distance < 1.2) {
         return;
@@ -1069,7 +1099,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
         </>
       )}
       <svg
-        viewBox={numberOfPlayer === 4 ? "-6 -6 12 12" : "-8 -8 16 16"}
+        viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
         preserveAspectRatio="xMidYMid meet"
       >
         {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
