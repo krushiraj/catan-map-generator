@@ -113,6 +113,9 @@ const HomePage = () => {
         reset={resetMap}
         players={players}
       />
+      <footer className="footer text-black">
+        Made with ❤️ for Catan by <a href="https://krushiraj.github.io">Krushi Raj Tula</a> - © {new Date().getFullYear()}
+      </footer>
     </div>
   );
 };
