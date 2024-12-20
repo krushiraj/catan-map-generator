@@ -74,7 +74,7 @@ const HomePage = () => {
               value={scarceResource}
               onChange={(e) => {
                 if (e.target.value === "random") {
-                  const resources = ["brick", "wheat", "ore", "wood", "sheep"];
+                  const resources = ["brick", "hay", "ore", "wood", "sheep"];
                   setScarceResource(
                     resources[Math.floor(Math.random() * resources.length)]
                   );
@@ -85,7 +85,7 @@ const HomePage = () => {
             >
               <option value="">None</option>
               <option value="brick">Brick</option>
-              <option value="wheat">Wheat</option>
+              <option value="hay">Hay</option>
               <option value="ore">Ore</option>
               <option value="wood">Wood</option>
               <option value="sheep">Sheep</option>
