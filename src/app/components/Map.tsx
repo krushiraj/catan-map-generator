@@ -1012,32 +1012,25 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     }
 
     const secondHouse = placements[1].house;
-    const [x, y] = secondHouse.split("#")[0].split(",");
+    const [x, y] = secondHouse.split("#")[0].split(",").map(Number);
 
     if (!hexesTouchingSecondHouseForEachPlayer[playerName]) {
       hexesTouchingSecondHouseForEachPlayer[playerName] = [];
     }
 
-    const getAllVerticesOfHex = (x: number, y: number) => [
-      { x: x, y: y - 1 },
-      { x: x + 0.866, y: y - 0.5 },
-      { x: x + 0.866, y: y + 0.5 },
-      { x: x, y: y + 1 },
-      { x: x - 0.866, y: y + 0.5 },
-      { x: x - 0.866, y: y - 0.5 },
-    ];
+    // const getAllVerticesOfHex = (x: number, y: number) => [
+    //   { x: x, y: y - 1 },
+    //   { x: x + 0.866, y: y - 0.5 },
+    //   { x: x + 0.866, y: y + 0.5 },
+    //   { x: x, y: y + 1 },
+    //   { x: x - 0.866, y: y + 0.5 },
+    //   { x: x - 0.866, y: y - 0.5 },
+    // ];
 
     // Find the hexes touching the second house
-    // iterate over all hexes and check if the points are within the radius 0.3 from the vertex center x, y
-    const hexesTouchingSecondHouse = board.filter((hex) => {
-      const vertices = getAllVerticesOfHex(hex.x, hex.y);
-      return vertices.some(
-        (vertex) =>
-          Math.sqrt(
-            (vertex.x - parseFloat(x)) ** 2 + (vertex.y - parseFloat(y)) ** 2
-          ) < 0.3
-      );
-    });
+    const hexesTouchingSecondHouse = board.filter(
+      (hex) => Math.sqrt((hex.x - x) ** 2 + (hex.y - y) ** 2) < 1.2
+    );
 
     const resources = hexesTouchingSecondHouse.map((hex) => hex.resource);
 
