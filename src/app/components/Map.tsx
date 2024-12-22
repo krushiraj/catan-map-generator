@@ -106,10 +106,10 @@ const portPositions = {
       rotation: 30,
     },
     {
-      x: -5.5,
-      y: 1.7,
+      x: -5.6,
+      y: 1.3,
       resource: "all",
-      rotation: 30,
+      rotation: -30,
     },
     {
       x: -4.4,
