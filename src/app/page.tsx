@@ -15,9 +15,15 @@ const HomePage = () => {
   const [surpriseMode, setSurpriseMode] = useState(false);
   const [players, setPlayers] = useState([]);
   const [resetMap, setResetMap] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateMap = () => {
-    setResetMap(!resetMap);
+    setIsGenerating(true);
+    // Add a small delay to show the loading state
+    setTimeout(() => {
+      setResetMap(!resetMap);
+      setIsGenerating(false);
+    }, 500);
   };
 
   const handleSurpriseMode = () => {
@@ -130,8 +136,12 @@ const HomePage = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap justify-center gap-4 mt-8">
-                <button onClick={handleGenerateMap} className="success">
-                  🔄 Generate New Map
+                <button 
+                  onClick={handleGenerateMap} 
+                  disabled={isGenerating}
+                  className={`success ${isGenerating ? 'animate-pulse-soft' : ''} disabled:opacity-70 disabled:cursor-not-allowed`}
+                >
+                  {isGenerating ? "🎲 Generating..." : "🔄 Generate New Map"}
                 </button>
                 <button onClick={handleSurpriseMode} className="secondary">
                   {surpriseMode ? "🙈 Hide Surprise Mode" : "🎉 Surprise Mode"}
@@ -162,15 +172,17 @@ const HomePage = () => {
               <h2 className="text-2xl font-semibold text-white mb-6 text-center">
                 🗺️ Game Board
               </h2>
-              <CatanBoard
-                numberOfPlayer={numPlayers}
-                sameResourcesShouldTouch={!noSameResources}
-                sameNumberShouldTouch={!noSameNumbers}
-                invertTiles={players.length === numPlayers ? surpriseMode : false}
-                scarceResource={scarceResource as Resource}
-                reset={resetMap}
-                players={players}
-              />
+              <div className={`${isGenerating ? 'animate-pulse-soft' : 'animate-bounce-in'}`}>
+                <CatanBoard
+                  numberOfPlayer={numPlayers}
+                  sameResourcesShouldTouch={!noSameResources}
+                  sameNumberShouldTouch={!noSameNumbers}
+                  invertTiles={players.length === numPlayers ? surpriseMode : false}
+                  scarceResource={scarceResource as Resource}
+                  reset={resetMap}
+                  players={players}
+                />
+              </div>
             </div>
           </div>
         </div>

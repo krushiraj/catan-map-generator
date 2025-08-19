@@ -1063,7 +1063,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
                     playerTurns[players.length as NumberOfPlayers][playerTurn]
                   ].name
                 }
-                's turn
+                &apos;s turn
               </span>
             </p>
           </div>
