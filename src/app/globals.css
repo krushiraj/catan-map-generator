@@ -5,53 +5,117 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --catan-primary: #8B5A3C;
+  --catan-secondary: #DEB887;
+  --catan-accent: #CD853F;
+  --catan-success: #228B22;
+  --catan-warning: #FF8C00;
+  --catan-danger: #DC143C;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --catan-primary: #A0785A;
+    --catan-secondary: #F4E4C1;
+    --catan-accent: #E6A85C;
   }
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
+/* Modern button styles */
 button {
-  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+  @apply bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 
+         text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
+         transform hover:scale-105 transition-all duration-200 ease-in-out;
 }
 
+button.secondary {
+  @apply bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700;
+}
+
+button.success {
+  @apply bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700;
+}
+
+/* Enhanced input and select styles */
 input, select {
-  @apply border border-gray-300 rounded py-2 px-4;
+  @apply border-2 border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4 
+         bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm
+         focus:ring-2 focus:ring-amber-500 focus:border-amber-500 
+         transition-all duration-200 ease-in-out
+         text-gray-900 dark:text-gray-100;
 }
 
+input[type="checkbox"] {
+  @apply w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600
+         checked:bg-amber-500 checked:border-amber-500
+         focus:ring-2 focus:ring-amber-500;
+}
+
+/* Layout components */
 .container {
-  @apply max-w-4xl mx-auto p-4;
+  @apply max-w-7xl mx-auto p-6;
 }
 
 .header {
-  @apply text-3xl font-bold mb-4;
+  @apply text-4xl md:text-5xl font-bold mb-8 text-center 
+         bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 
+         bg-clip-text text-transparent;
 }
 
 .section {
   @apply mb-8;
 }
 
-.map {
-  @apply grid grid-cols-4 gap-4;
+.control-panel {
+  @apply bg-white/20 dark:bg-gray-800/30 backdrop-blur-lg rounded-2xl 
+         p-6 shadow-2xl border border-white/20 dark:border-gray-700/20;
 }
 
-.map-tile {
-  @apply border border-gray-400 rounded p-2;
+.control-group {
+  @apply bg-white/10 dark:bg-gray-700/20 backdrop-blur-sm rounded-xl 
+         p-4 shadow-lg border border-white/10 dark:border-gray-600/10;
 }
 
-.player-setup {
-  @apply mb-4;
+.map-container {
+  @apply bg-white/10 dark:bg-gray-800/20 backdrop-blur-lg rounded-2xl 
+         p-6 shadow-2xl border border-white/20 dark:border-gray-700/20;
 }
 
-.player-list {
-  @apply list-disc pl-5;
+.footer {
+  @apply bg-gradient-to-r from-slate-800/80 to-slate-900/80 backdrop-blur-lg
+         text-white p-6 text-center border-t border-white/10
+         shadow-2xl;
+}
+
+/* Responsive grid for controls */
+.controls-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+}
+
+/* Label styling */
+.control-label {
+  @apply flex flex-col space-y-2 text-white font-medium;
+}
+
+.control-label-horizontal {
+  @apply flex items-center space-x-3 text-white font-medium;
+}
+
+/* Smooth animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -1040,25 +1040,33 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   }
 
   return (
-    <div className="flex flex-col justify-center items-center bg-blue-100">
+    <div className="flex flex-col justify-center items-center">
       {invertTiles && (
-        <>
-          <h1 className="text-4xl text-black">Inverted Tiles</h1>
-          <p
-            style={{
-              color:
-                players[
-                  playerTurns[players.length as NumberOfPlayers][playerTurn]
-                ].color,
-            }}
-          >
-            {
-              players[
-                playerTurns[players.length as NumberOfPlayers][playerTurn]
-              ].name
-            }
-            &apos;s turn
-          </p>
+        <div className="mb-6 text-center space-y-4">
+          <h3 className="text-3xl font-bold text-white flex items-center justify-center space-x-2">
+            <span>🙈</span>
+            <span>Surprise Mode - Hidden Tiles</span>
+          </h3>
+          <div className="bg-white/10 dark:bg-gray-700/20 backdrop-blur-sm rounded-xl p-4 inline-block">
+            <p className="text-lg font-medium flex items-center space-x-2"
+               style={{
+                 color:
+                   players[
+                     playerTurns[players.length as NumberOfPlayers][playerTurn]
+                   ].color,
+               }}
+            >
+              <span>🎮</span>
+              <span>
+                {
+                  players[
+                    playerTurns[players.length as NumberOfPlayers][playerTurn]
+                  ].name
+                }
+                's turn
+              </span>
+            </p>
+          </div>
           <button
             onClick={
               playerTurns[players.length as NumberOfPlayers].length - 1 ===
@@ -1066,67 +1074,75 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
                 ? handleReveal
                 : handlePlayerTurn
             }
-            className="bg-red-500 text-white p-2 rounded"
+            className={playerTurns[players.length as NumberOfPlayers].length - 1 === playerTurn ? "success" : ""}
           >
             {playerTurns[players.length as NumberOfPlayers].length - 1 ===
             playerTurn
-              ? "Reveal"
-              : "Confirm Placements"}
+              ? "🎉 Reveal Map"
+              : "✅ Confirm Placements"}
           </button>
           {reveal &&
             Object.keys(playerPlacements).map((playerName) => (
-              <p key={playerName} className="text-black">
-                <span
-                  style={{
-                    color: players.filter(
-                      (player) => player.name === playerName
-                    )[0].color,
-                  }}
-                >
-                  {playerName}
-                </span>{" "}
-                gets{" "}
-                {hexesTouchingSecondHouseForEachPlayer[playerName].join(", ")}
-              </p>
+              <div key={playerName} className="bg-white/10 dark:bg-gray-700/20 backdrop-blur-sm rounded-lg p-3 inline-block mx-2">
+                <p className="text-white">
+                  <span
+                    className="font-semibold"
+                    style={{
+                      color: players.filter(
+                        (player) => player.name === playerName
+                      )[0].color,
+                    }}
+                  >
+                    {playerName}
+                  </span>{" "}
+                  gets{" "}
+                  <span className="font-medium">
+                    {hexesTouchingSecondHouseForEachPlayer[playerName].join(", ")}
+                  </span>
+                </p>
+              </div>
             ))}
-        </>
+        </div>
       )}
-      <svg
-        viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
-          <React.Fragment key={index}>
-            <TriangleTile
-              x={port.x}
-              y={port.y}
-              resource={port.resource}
-              rotation={port.rotation}
-            />
-          </React.Fragment>
-        ))}
-        {board.map((hex, index) => (
-          <React.Fragment key={`${index}-${hex.x},${hex.y}`}>
-            <HexTile
-              x={hex.x}
-              y={hex.y}
-              rotation={60}
-              resource={board[index].resource as string}
-              number={board[index].number}
-              isHovered={hoveredHex === index}
-              onHover={() => setHoveredHex(index)}
-              onHoverEnd={() => setHoveredHex(null)}
-              reveal={reveal}
-            />
-            {allEdges(hex.x, hex.y).filter((_, index) =>
-              hex.edges.includes(index)
-            )}
-            {allVertices(hex.x, hex.y).filter((_, index) =>
-              hex.vertices.includes(index)
-            )}
-          </React.Fragment>
-        ))}
-      </svg>
+      <div className="w-full flex justify-center">
+        <svg
+          className="max-w-full h-auto"
+          viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
+            <React.Fragment key={index}>
+              <TriangleTile
+                x={port.x}
+                y={port.y}
+                resource={port.resource}
+                rotation={port.rotation}
+              />
+            </React.Fragment>
+          ))}
+          {board.map((hex, index) => (
+            <React.Fragment key={`${index}-${hex.x},${hex.y}`}>
+              <HexTile
+                x={hex.x}
+                y={hex.y}
+                rotation={60}
+                resource={board[index].resource as string}
+                number={board[index].number}
+                isHovered={hoveredHex === index}
+                onHover={() => setHoveredHex(index)}
+                onHoverEnd={() => setHoveredHex(null)}
+                reveal={reveal}
+              />
+              {allEdges(hex.x, hex.y).filter((_, index) =>
+                hex.edges.includes(index)
+              )}
+              {allVertices(hex.x, hex.y).filter((_, index) =>
+                hex.vertices.includes(index)
+              )}
+            </React.Fragment>
+          ))}
+        </svg>
+      </div>
     </div>
   );
 };
