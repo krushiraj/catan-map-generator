@@ -2,56 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-base: #0D0D0F;
+    --bg-surface: #1A1714;
+    --bg-surface-raised: #242019;
+    --accent-gold: #D4A546;
+    --accent-gold-dark: #B8922E;
+    --text-primary: #F0E6D6;
+    --text-secondary: #9B8B6E;
+    --border: #2A2520;
+
+    --resource-brick: #E85D4A;
+    --resource-wheat: #E8C44A;
+    --resource-ore: #8A9BAE;
+    --resource-wood: #4A9B5A;
+    --resource-sheep: #8BBF7A;
+    --resource-desert: #C4956A;
+    --resource-sea: #1A6B6B;
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .gold-gradient {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+  }
+
+  .glass-surface {
+    background: rgba(26, 23, 20, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .btn-press {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .btn-press:active {
+    transform: scale(0.96);
+  }
+
+  .gold-ring {
+    box-shadow: 0 0 0 2px var(--accent-gold), 0 0 8px rgba(212, 165, 70, 0.3);
+  }
+
+  .vignette {
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(13, 13, 15, 0.6) 100%);
+  }
 }
 
-button {
-  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.2s !important;
+  }
 }
 
-input, select {
-  @apply border border-gray-300 rounded py-2 px-4;
-}
-
-.container {
-  @apply max-w-4xl mx-auto p-4;
-}
-
-.header {
-  @apply text-3xl font-bold mb-4;
-}
-
-.section {
-  @apply mb-8;
-}
-
-.map {
-  @apply grid grid-cols-4 gap-4;
-}
-
-.map-tile {
-  @apply border border-gray-400 rounded p-2;
-}
-
-.player-setup {
-  @apply mb-4;
-}
-
-.player-list {
-  @apply list-disc pl-5;
+/* Vaul drawer overrides */
+[vaul-drawer] {
+  background: var(--bg-surface) !important;
 }
