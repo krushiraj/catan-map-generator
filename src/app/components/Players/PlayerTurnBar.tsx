@@ -1,11 +1,7 @@
 "use client";
 
 import React from "react";
-
-interface Player {
-  name: string;
-  color: string;
-}
+import type { Player } from "../../utils/board";
 
 interface PlayerTurnBarProps {
   currentPlayer: Player;

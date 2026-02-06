@@ -5,6 +5,11 @@ export type Resource = "wood" | "brick" | "ore" | "hay" | "sheep" | "desert";
 
 export type NumberOfPlayers = 4 | 5 | 6;
 
+export interface Player {
+  name: string;
+  color: string;
+}
+
 export interface HexPosition {
   x: number;
   y: number;

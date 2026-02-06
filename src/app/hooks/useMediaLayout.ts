@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 
 export type LayoutMode = "mobile" | "tablet" | "desktop";
 
-export function useMediaLayout(): LayoutMode {
-  const [layout, setLayout] = useState<LayoutMode>("mobile");
+export function useMediaLayout(): LayoutMode | null {
+  const [layout, setLayout] = useState<LayoutMode | null>(null);
 
   useEffect(() => {
     const update = () => {

@@ -12,18 +12,11 @@ import {
   type Resource,
   type NumberOfPlayers,
   type HexPosition,
+  type Player,
 } from "../utils/board";
+import { PlayerTurnBar } from "./Players/PlayerTurnBar";
 
-export type { Resource, NumberOfPlayers, HexPosition };
-
-type PlayerColor =
-  | "red"
-  | "blue"
-  | "green"
-  | "yellow"
-  | "white"
-  | "orange"
-  | "brown";
+export type { Resource, NumberOfPlayers, HexPosition, Player };
 
 interface CatanBoardProps {
   numberOfPlayer: NumberOfPlayers;
@@ -32,7 +25,7 @@ interface CatanBoardProps {
   scarceResource: Resource;
   invertTiles: boolean;
   reset: boolean;
-  players: { name: string; color: PlayerColor }[];
+  players: Player[];
 }
 
 interface Placement {
@@ -334,43 +327,23 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     ) as Resource[];
   }
 
+  const currentPlayerIndex = playerTurns[players.length as NumberOfPlayers]?.[playerTurn] ?? 0;
+  const currentPlayer = players[currentPlayerIndex];
+  const isLastTurn = playerTurns[players.length as NumberOfPlayers]?.length - 1 === playerTurn;
+
   return (
-    <div className="flex flex-col justify-center items-center bg-blue-100">
-      {invertTiles && (
+    <div className="flex flex-col justify-center items-center">
+      {invertTiles && currentPlayer && (
         <>
-          <h1 className="text-4xl text-black">Inverted Tiles</h1>
-          <p
-            style={{
-              color:
-                players[
-                  playerTurns[players.length as NumberOfPlayers][playerTurn]
-                ].color,
-            }}
-          >
-            {
-              players[
-                playerTurns[players.length as NumberOfPlayers][playerTurn]
-              ].name
-            }
-            &apos;s turn
-          </p>
-          <button
-            onClick={
-              playerTurns[players.length as NumberOfPlayers].length - 1 ===
-              playerTurn
-                ? handleReveal
-                : handlePlayerTurn
-            }
-            className="bg-red-500 text-white p-2 rounded"
-          >
-            {playerTurns[players.length as NumberOfPlayers].length - 1 ===
-            playerTurn
-              ? "Reveal"
-              : "Confirm Placements"}
-          </button>
+          <PlayerTurnBar
+            currentPlayer={currentPlayer}
+            onNext={handlePlayerTurn}
+            isLastTurn={isLastTurn}
+            onReveal={handleReveal}
+          />
           {reveal &&
             Object.keys(playerPlacements).map((playerName) => (
-              <p key={playerName} className="text-black">
+              <p key={playerName} className="text-sm text-text-primary py-1">
                 <span
                   style={{
                     color: players.filter(
@@ -381,7 +354,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
                   {playerName}
                 </span>{" "}
                 gets{" "}
-                {hexesTouchingSecondHouseForEachPlayer[playerName].join(", ")}
+                {hexesTouchingSecondHouseForEachPlayer[playerName]?.join(", ")}
               </p>
             ))}
         </>

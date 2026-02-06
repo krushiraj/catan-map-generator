@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 interface ScarceResourcePickerProps {
   value: string;
@@ -19,6 +19,8 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
   value,
   onChange,
 }) => {
+  const [isRandom, setIsRandom] = useState(false);
+
   return (
     <div>
       <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">
@@ -26,9 +28,9 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
       </h3>
       <div className="flex gap-2 flex-wrap">
         <button
-          onClick={() => onChange("")}
+          onClick={() => { setIsRandom(false); onChange(""); }}
           className={`btn-press px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            value === ""
+            value === "" && !isRandom
               ? "gold-gradient text-bg-base"
               : "bg-bg-surface-raised text-text-secondary border border-border"
           }`}
@@ -38,9 +40,9 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
         {RESOURCES.map((res) => (
           <button
             key={res.key}
-            onClick={() => onChange(res.key)}
+            onClick={() => { setIsRandom(false); onChange(res.key); }}
             className={`btn-press w-9 h-9 rounded-full text-lg transition-all flex items-center justify-center ${
-              value === res.key
+              value === res.key && !isRandom
                 ? "ring-2 ring-accent-gold ring-offset-2 ring-offset-bg-base"
                 : "opacity-60 hover:opacity-100"
             } ${res.color}`}
@@ -51,11 +53,12 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
         ))}
         <button
           onClick={() => {
+            setIsRandom(true);
             const resources = ["brick", "hay", "ore", "wood", "sheep"];
             onChange(resources[Math.floor(Math.random() * resources.length)]);
           }}
           className={`btn-press px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            !["", "brick", "hay", "ore", "wood", "sheep"].includes(value)
+            isRandom
               ? "gold-gradient text-bg-base"
               : "bg-bg-surface-raised text-text-secondary border border-border"
           }`}

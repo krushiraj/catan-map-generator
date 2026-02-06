@@ -2,18 +2,13 @@
 
 import React from "react";
 import { Drawer } from "vaul";
-import type { NumberOfPlayers } from "../../utils/board";
+import type { NumberOfPlayers, Player } from "../../utils/board";
 import { GenerateButton } from "./GenerateButton";
 import { PlayerCountPills } from "./PlayerCountPills";
 import { ConstraintToggles } from "./ConstraintToggles";
 import { ScarceResourcePicker } from "./ScarceResourcePicker";
 import { SurpriseToggle } from "./SurpriseToggle";
 import { PlayerSetup } from "../Players/PlayerSetup";
-
-interface Player {
-  name: string;
-  color: string;
-}
 
 interface BottomSheetProps {
   numPlayers: NumberOfPlayers;
@@ -52,7 +47,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   return (
     <Drawer.Root
       snapPoints={["148px", 0.45, 0.85]}
-      activeSnapPoint="148px"
       modal={false}
     >
       <Drawer.Portal>

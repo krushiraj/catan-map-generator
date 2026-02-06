@@ -1,18 +1,13 @@
 "use client";
 
 import React from "react";
-import type { NumberOfPlayers } from "../../utils/board";
+import type { NumberOfPlayers, Player } from "../../utils/board";
 import { GenerateButton } from "../Controls/GenerateButton";
 import { PlayerCountPills } from "../Controls/PlayerCountPills";
 import { ConstraintToggles } from "../Controls/ConstraintToggles";
 import { ScarceResourcePicker } from "../Controls/ScarceResourcePicker";
 import { SurpriseToggle } from "../Controls/SurpriseToggle";
 import { PlayerSetup } from "../Players/PlayerSetup";
-
-interface Player {
-  name: string;
-  color: string;
-}
 
 interface SidePanelProps {
   numPlayers: NumberOfPlayers;

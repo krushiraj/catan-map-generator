@@ -1,18 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { CatanBoard } from "./components/Map";
 import { Header } from "./components/Layout/Header";
 import { BottomSheet } from "./components/Controls/BottomSheet";
 import { SidePanel } from "./components/Layout/SidePanel";
-import { ShareActions } from "./components/Share/ShareActions";
 import { useMediaLayout } from "./hooks/useMediaLayout";
-import type { NumberOfPlayers, Resource } from "./utils/board";
-
-interface Player {
-  name: string;
-  color: string;
-}
+import type { NumberOfPlayers, Resource, Player } from "./utils/board";
 
 const HomePage = () => {
   const layout = useMediaLayout();
@@ -27,11 +21,33 @@ const HomePage = () => {
   const [resetMap, setResetMap] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const handleGenerate = () => {
+  const handleGenerate = useCallback(() => {
     setResetMap((prev) => !prev);
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 1200);
-  };
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    if (!boardRef.current) return;
+    const { toPng } = await import("html-to-image");
+    try {
+      const dataUrl = await toPng(boardRef.current, {
+        pixelRatio: 2,
+        backgroundColor: "#0D0D0F",
+      });
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], "catan-map.png", { type: "image/png" });
+      if (navigator.share) {
+        await navigator.share({ title: "Catan Map", files: [file] });
+      } else {
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": blob }),
+        ]);
+      }
+    } catch {
+      // silently fail
+    }
+  }, []);
 
   const controlProps = {
     numPlayers,
@@ -60,13 +76,22 @@ const HomePage = () => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [handleGenerate]);
+
+  if (!layout) {
+    return (
+      <div className="h-dvh flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-accent-gold/30 border-t-accent-gold rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-dvh flex flex-col overflow-hidden">
       {/* Header */}
       <Header
         surpriseMode={surpriseMode && players.length === numPlayers}
+        onShare={handleShare}
       />
 
       {/* Main Content */}
@@ -92,7 +117,7 @@ const HomePage = () => {
             invertTiles={players.length === numPlayers ? surpriseMode : false}
             scarceResource={scarceResource as Resource}
             reset={resetMap}
-            players={players as { name: string; color: "red" | "blue" | "green" | "yellow" | "white" | "orange" | "brown" }[]}
+            players={players}
           />
         </div>
 
@@ -106,13 +131,6 @@ const HomePage = () => {
 
       {/* Mobile: Bottom Sheet */}
       {layout === "mobile" && <BottomSheet {...controlProps} />}
-
-      {/* Share floating button for mobile */}
-      {layout === "mobile" && (
-        <div className="fixed top-2 right-2 z-50">
-          <ShareActions boardRef={boardRef} />
-        </div>
-      )}
     </div>
   );
 };
