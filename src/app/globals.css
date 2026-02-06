@@ -1,7 +1,8 @@
+@import "./animations.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "./animations.css";
 
 @layer base {
   :root {
@@ -64,6 +65,17 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.2s !important;
+  }
+}
+
+/* Hex tile hover (CSS-only to avoid re-renders) */
+.hex-tile {
+  transition: transform 0.2s ease;
+}
+@media (hover: hover) {
+  .hex-tile:hover {
+    transform: scale(1.03);
+    filter: brightness(1.1);
   }
 }
 

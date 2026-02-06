@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { HexTile } from "./HexTile";
 import { Vertex } from "./Vertex";
 import { Edge } from "./Edge";
@@ -14,9 +14,37 @@ import {
   type HexPosition,
   type Player,
 } from "../utils/board";
-import { PlayerTurnBar } from "./Players/PlayerTurnBar";
+import { PlayerTurnBar, type PlacementPhase } from "./Players/PlayerTurnBar";
 
 export type { Resource, NumberOfPlayers, HexPosition, Player };
+
+// Coordinate key helpers - we use # as delimiter since hex colors contain #
+const vertexKey = (x: number, y: number, color: string) => `${x},${y}${color}`;
+const edgeKey = (x1: number, y1: number, x2: number, y2: number, color: string) =>
+  `${x1},${y1}-${x2},${y2}${color}`;
+
+const coordsFromVertexKey = (key: string) => {
+  const [coords] = key.split("#");
+  const [x, y] = coords.split(",").map(Number);
+  return { x, y };
+};
+
+const dist = (x1: number, y1: number, x2: number, y2: number) =>
+  Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+
+// Minimum distance between two settlements (Catan distance rule)
+const MIN_SETTLEMENT_DIST = 1.2;
+// Max distance for an edge endpoint to "touch" a vertex
+const EDGE_VERTEX_TOLERANCE = 0.1;
+
+interface Placement {
+  house: string;
+  road: string;
+}
+
+interface PlayerPlacements {
+  [playerName: string]: Placement[];
+}
 
 interface CatanBoardProps {
   numberOfPlayer: NumberOfPlayers;
@@ -26,15 +54,6 @@ interface CatanBoardProps {
   invertTiles: boolean;
   reset: boolean;
   players: Player[];
-}
-
-interface Placement {
-  house: string;
-  road: string;
-}
-
-interface PlayerPlacement {
-  [key: string]: Placement[];
 }
 
 export const CatanBoard: React.FC<CatanBoardProps> = ({
@@ -47,13 +66,20 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   reset,
 }) => {
   const [board, setBoard] = useState<HexPosition[]>([]);
-  const [hoveredHex, setHoveredHex] = useState<number | null>(null);
   const [houses, setHouses] = useState<Set<string>>(new Set());
   const [roads, setRoads] = useState<Set<string>>(new Set());
-  const [playerPlacements, setPlayerPlacements] = useState<PlayerPlacement>({});
+  const [playerPlacements, setPlayerPlacements] = useState<PlayerPlacements>({});
   const [playerTurn, setPlayerTurn] = useState(0);
   const [reveal, setReveal] = useState(true);
+  const [placementPhase, setPlacementPhase] = useState<PlacementPhase>("settlement");
 
+  const turnOrder = playerTurns[players.length as NumberOfPlayers];
+  const currentPlayerIndex = turnOrder?.[playerTurn] ?? 0;
+  const currentPlayer = players[currentPlayerIndex];
+  const isLastTurn = turnOrder?.length - 1 === playerTurn;
+  const isSurpriseMode = invertTiles && currentPlayer;
+
+  // Reset everything on new board generation
   useEffect(() => {
     setBoard(
       createInitialBoard(
@@ -64,6 +90,11 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       )
     );
     setReveal(!invertTiles);
+    setHouses(new Set());
+    setRoads(new Set());
+    setPlayerPlacements({});
+    setPlayerTurn(0);
+    setPlacementPhase("settlement");
   }, [
     numberOfPlayer,
     sameNumberShouldTouch,
@@ -73,163 +104,284 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     invertTiles,
   ]);
 
-  const handlePlayerTurn = () => setPlayerTurn(playerTurn + 1);
-
-  const handleReveal = () => setReveal(true);
-
-  // Calculate positions for a hexagonal grid with horizontal gaps
-
-  const handleVertexClick = (x: number, y: number) => {
-    const currentPlayer =
-      players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
-
-    const key = `${x},${y}${currentPlayer.color}`;
-
-    for (const house of [...houses].filter((house: string) => house !== key)) {
-      const [houseX, houseY] = house.split("#")[0].split(",").map(Number);
-      const distance = Math.sqrt((houseX - x) ** 2 + (houseY - y) ** 2);
-      if (distance < 1.2) {
-        return;
+  // Collect all vertex positions from the board for validation
+  const allVertexPositions = useMemo(() => {
+    const positions: { x: number; y: number }[] = [];
+    const seen = new Set<string>();
+    for (const hex of board) {
+      const verts = [
+        { x: hex.x, y: hex.y - 1.173 },
+        { x: hex.x + 0.99, y: hex.y - 0.5865 },
+        { x: hex.x + 0.99, y: hex.y + 0.5865 },
+        { x: hex.x, y: hex.y + 1.173 },
+        { x: hex.x - 0.99, y: hex.y + 0.5865 },
+        { x: hex.x - 0.99, y: hex.y - 0.5865 },
+      ];
+      for (const v of verts) {
+        const key = `${v.x.toFixed(3)},${v.y.toFixed(3)}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          positions.push(v);
+        }
       }
     }
+    return positions;
+  }, [board]);
 
-    let addingHouse = true;
-
-    setHouses((prevHouses) => {
-      const newHouses = new Set(prevHouses);
-      if (newHouses.has(key)) {
-        newHouses.delete(key);
-        addingHouse = false;
-      } else {
-        newHouses.add(key);
-      }
-      return newHouses;
-    });
-
-    if (addingHouse) {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
+  // Collect all edge positions from the board
+  const allEdgePositions = useMemo(() => {
+    const edges: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    const seen = new Set<string>();
+    for (const hex of board) {
+      const verts = [
+        { x: hex.x, y: hex.y - 1.173 },
+        { x: hex.x + 0.99, y: hex.y - 0.5865 },
+        { x: hex.x + 0.99, y: hex.y + 0.5865 },
+        { x: hex.x, y: hex.y + 1.173 },
+        { x: hex.x - 0.99, y: hex.y + 0.5865 },
+        { x: hex.x - 0.99, y: hex.y - 0.5865 },
+      ];
+      const hexEdges = [
+        [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0],
+      ];
+      for (const edgeIdx of hex.edges) {
+        const [a, b] = hexEdges[edgeIdx];
+        const e = { x1: verts[a].x, y1: verts[a].y, x2: verts[b].x, y2: verts[b].y };
+        // Normalize key so same edge from different hexes is same
+        const k1 = `${e.x1.toFixed(3)},${e.y1.toFixed(3)}-${e.x2.toFixed(3)},${e.y2.toFixed(3)}`;
+        const k2 = `${e.x2.toFixed(3)},${e.y2.toFixed(3)}-${e.x1.toFixed(3)},${e.y1.toFixed(3)}`;
+        if (!seen.has(k1) && !seen.has(k2)) {
+          seen.add(k1);
+          edges.push(e);
         }
-        newPlacements[currentPlayer.name].push({
-          house: key,
-          road: "",
+      }
+    }
+    return edges;
+  }, [board]);
+
+  // Check if a vertex is valid for settlement placement (distance rule)
+  const isValidSettlement = useCallback(
+    (x: number, y: number) => {
+      for (const key of houses) {
+        const coords = coordsFromVertexKey(key);
+        if (dist(x, y, coords.x, coords.y) < MIN_SETTLEMENT_DIST) {
+          return false;
+        }
+      }
+      return true;
+    },
+    [houses]
+  );
+
+  // Get the settlement placed this turn (if any)
+  const currentTurnSettlement = useMemo(() => {
+    if (!currentPlayer) return null;
+    const placements = playerPlacements[currentPlayer.name];
+    if (!placements || placements.length === 0) return null;
+    const last = placements[placements.length - 1];
+    // Only return if it was placed this turn (road not yet confirmed)
+    if (placementPhase === "road" || placementPhase === "done") {
+      return coordsFromVertexKey(last.house);
+    }
+    return null;
+  }, [currentPlayer, playerPlacements, placementPhase]);
+
+  // Check if an edge is valid for road placement (must connect to current settlement)
+  const isValidRoad = useCallback(
+    (x1: number, y1: number, x2: number, y2: number) => {
+      if (!currentTurnSettlement) return false;
+      const { x, y } = currentTurnSettlement;
+      const d1 = dist(x1, y1, x, y);
+      const d2 = dist(x2, y2, x, y);
+      return d1 < EDGE_VERTEX_TOLERANCE || d2 < EDGE_VERTEX_TOLERANCE;
+    },
+    [currentTurnSettlement]
+  );
+
+  // Set of valid vertex positions for current state
+  const validVertices = useMemo(() => {
+    if (!isSurpriseMode || placementPhase !== "settlement") return new Set<string>();
+    const valid = new Set<string>();
+    for (const v of allVertexPositions) {
+      if (isValidSettlement(v.x, v.y)) {
+        valid.add(`${v.x.toFixed(3)},${v.y.toFixed(3)}`);
+      }
+    }
+    return valid;
+  }, [isSurpriseMode, placementPhase, allVertexPositions, isValidSettlement]);
+
+  // Set of valid edge positions for current state
+  const validEdges = useMemo(() => {
+    if (!isSurpriseMode || placementPhase !== "road") return new Set<string>();
+    const valid = new Set<string>();
+    for (const e of allEdgePositions) {
+      if (isValidRoad(e.x1, e.y1, e.x2, e.y2)) {
+        // Check edge isn't already taken
+        const taken = [...roads].some((r) => {
+          const [coordPart] = r.split("#");
+          const [p1, p2] = coordPart.split("-");
+          const [rx1, ry1] = p1.split(",").map(Number);
+          const [rx2, ry2] = p2.split(",").map(Number);
+          return (
+            (dist(rx1, ry1, e.x1, e.y1) < EDGE_VERTEX_TOLERANCE &&
+              dist(rx2, ry2, e.x2, e.y2) < EDGE_VERTEX_TOLERANCE) ||
+            (dist(rx1, ry1, e.x2, e.y2) < EDGE_VERTEX_TOLERANCE &&
+              dist(rx2, ry2, e.x1, e.y1) < EDGE_VERTEX_TOLERANCE)
+          );
         });
-        return newPlacements;
-      });
-    } else {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
+        if (!taken) {
+          valid.add(`${e.x1.toFixed(3)},${e.y1.toFixed(3)}-${e.x2.toFixed(3)},${e.y2.toFixed(3)}`);
         }
-        newPlacements[currentPlayer.name] = newPlacements[
-          currentPlayer.name
-        ].filter((placement) => placement.house !== key);
-        return newPlacements;
-      });
-    }
-  };
-
-  const handleEdgeClick = (x1: number, y1: number, x2: number, y2: number) => {
-    const currentPlayer =
-      players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
-
-    const key = `${x1},${y1}-${x2},${y2}${currentPlayer.color}`;
-
-    const lastHouse =
-      playerPlacements[currentPlayer.name][
-        playerPlacements[currentPlayer.name].length - 1
-      ].house;
-    const [lastHouseX, lastHouseY] = lastHouse
-      .split("#")[0]
-      .split(",")
-      .map(Number);
-
-    const distance1 = Math.sqrt(
-      (x1 - lastHouseX) ** 2 + (y1 - lastHouseY) ** 2
-    );
-    const distance2 = Math.sqrt(
-      (x2 - lastHouseX) ** 2 + (y2 - lastHouseY) ** 2
-    );
-
-    if (distance1 > 0.1 && distance2 > 0.1) {
-      return; // Do not add the road if it doesn't align with the last clicked house
-    }
-
-    if (!currentPlayer) {
-      return;
-    }
-
-    if (!playerPlacements[currentPlayer.name]) {
-      return;
-    }
-
-    if (
-      !playerPlacements[currentPlayer.name][
-        playerPlacements[currentPlayer.name].length - 1
-      ]
-    ) {
-      return;
-    }
-
-    if (
-      !playerPlacements[currentPlayer.name][
-        playerPlacements[currentPlayer.name].length - 1
-      ].house
-    ) {
-      return;
-    }
-
-    let addingRoad = true;
-
-    setRoads((prevRoads) => {
-      const newRoads = new Set(prevRoads);
-      if (newRoads.has(key)) {
-        newRoads.delete(key);
-        addingRoad = false;
-      } else {
-        newRoads.add(key);
       }
-      return newRoads;
-    });
-
-    if (addingRoad) {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
-        }
-        newPlacements[currentPlayer.name][
-          newPlacements[currentPlayer.name].length - 1
-        ].road = key;
-        return newPlacements;
-      });
-    } else {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
-        }
-        newPlacements[currentPlayer.name][
-          newPlacements[currentPlayer.name].length - 1
-        ].road = "";
-        return newPlacements;
-      });
     }
-  };
+    return valid;
+  }, [isSurpriseMode, placementPhase, allEdgePositions, isValidRoad, roads]);
+
+  const handleVertexClick = useCallback(
+    (x: number, y: number) => {
+      if (!isSurpriseMode || placementPhase !== "settlement" || !currentPlayer) return;
+      if (!isValidSettlement(x, y)) return;
+
+      const key = vertexKey(x, y, currentPlayer.color);
+
+      setHouses((prev) => new Set(prev).add(key));
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        if (!updated[currentPlayer.name]) updated[currentPlayer.name] = [];
+        updated[currentPlayer.name] = [
+          ...updated[currentPlayer.name],
+          { house: key, road: "" },
+        ];
+        return updated;
+      });
+      setPlacementPhase("road");
+    },
+    [isSurpriseMode, placementPhase, currentPlayer, isValidSettlement]
+  );
+
+  const handleEdgeClick = useCallback(
+    (x1: number, y1: number, x2: number, y2: number) => {
+      if (!isSurpriseMode || placementPhase !== "road" || !currentPlayer) return;
+      if (!isValidRoad(x1, y1, x2, y2)) return;
+
+      const key = edgeKey(x1, y1, x2, y2, currentPlayer.color);
+
+      setRoads((prev) => new Set(prev).add(key));
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        const placements = updated[currentPlayer.name];
+        if (placements && placements.length > 0) {
+          placements[placements.length - 1].road = key;
+        }
+        return { ...updated };
+      });
+      setPlacementPhase("done");
+    },
+    [isSurpriseMode, placementPhase, currentPlayer, isValidRoad]
+  );
+
+  const handleConfirm = useCallback(() => {
+    setPlayerTurn((prev) => prev + 1);
+    setPlacementPhase("settlement");
+  }, []);
+
+  const handleReveal = useCallback(() => {
+    setReveal(true);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    if (!currentPlayer) return;
+
+    if (placementPhase === "done") {
+      // Undo road
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        const placements = updated[currentPlayer.name];
+        if (placements && placements.length > 0) {
+          const roadKey = placements[placements.length - 1].road;
+          if (roadKey) {
+            setRoads((prevRoads) => {
+              const newRoads = new Set(prevRoads);
+              newRoads.delete(roadKey);
+              return newRoads;
+            });
+          }
+          placements[placements.length - 1].road = "";
+        }
+        return { ...updated };
+      });
+      setPlacementPhase("road");
+    } else if (placementPhase === "road") {
+      // Undo settlement
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        const placements = updated[currentPlayer.name];
+        if (placements && placements.length > 0) {
+          const houseKey = placements[placements.length - 1].house;
+          if (houseKey) {
+            setHouses((prevHouses) => {
+              const newHouses = new Set(prevHouses);
+              newHouses.delete(houseKey);
+              return newHouses;
+            });
+          }
+          placements.pop();
+        }
+        return { ...updated };
+      });
+      setPlacementPhase("settlement");
+    }
+  }, [currentPlayer, placementPhase]);
+
+  // Check if a vertex position is valid for highlighting
+  const isVertexValid = useCallback(
+    (x: number, y: number) => {
+      return validVertices.has(`${x.toFixed(3)},${y.toFixed(3)}`);
+    },
+    [validVertices]
+  );
+
+  // Check if an edge position is valid for highlighting
+  const isEdgeValid = useCallback(
+    (x1: number, y1: number, x2: number, y2: number) => {
+      const k1 = `${x1.toFixed(3)},${y1.toFixed(3)}-${x2.toFixed(3)},${y2.toFixed(3)}`;
+      const k2 = `${x2.toFixed(3)},${y2.toFixed(3)}-${x1.toFixed(3)},${y1.toFixed(3)}`;
+      return validEdges.has(k1) || validEdges.has(k2);
+    },
+    [validEdges]
+  );
+
+  // Compute resources touching second settlement for each player
+  const hexesTouchingSecondHouseForEachPlayer: Record<string, Resource[]> = {};
+  for (const playerName of Object.keys(playerPlacements)) {
+    const placements = playerPlacements[playerName];
+    if (placements.length < 2) continue;
+    const secondHouse = placements[1].house;
+    const { x, y } = coordsFromVertexKey(secondHouse);
+    const touching = board.filter(
+      (hex) => dist(hex.x, hex.y, x, y) < MIN_SETTLEMENT_DIST
+    );
+    hexesTouchingSecondHouseForEachPlayer[playerName] = touching
+      .map((hex) => hex.resource)
+      .filter((r) => r !== "desert") as Resource[];
+  }
 
   const DrawVertex = ({ x, y }: { x: number; y: number }) => {
     const color = [...houses]
       .find((house) => house.startsWith(`${x},${y}`))
       ?.split("#")[1];
+    const placed = color ? `#${color}` : undefined;
+    const valid = !placed && isVertexValid(x, y);
+
     return (
       <Vertex
         x={x}
         y={y}
         onClick={handleVertexClick}
-        color={color ? `#${color}` : undefined}
+        color={placed}
+        disabled={!isSurpriseMode || placementPhase !== "settlement"}
+        valid={valid}
+        highlightColor={currentPlayer?.color}
       />
     );
   };
@@ -248,6 +400,8 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const color = [...roads]
       .find((road) => road.startsWith(`${x1},${y1}-${x2},${y2}`))
       ?.split("#")[1];
+    const placed = color ? `#${color}` : undefined;
+    const valid = !placed && isEdgeValid(x1, y1, x2, y2);
 
     return (
       <Edge
@@ -256,7 +410,10 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
         x2={x2}
         y2={y2}
         onClick={handleEdgeClick}
-        color={color ? `#${color}` : undefined}
+        color={placed}
+        disabled={!isSurpriseMode || placementPhase !== "road"}
+        valid={valid}
+        highlightColor={currentPlayer?.color}
       />
     );
   };
@@ -272,83 +429,33 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
 
   const allEdges = (x: number, y: number) => [
     <DrawEdge x1={x} y1={y - 1.173} x2={x + 0.99} y2={y - 0.5865} key={0} />,
-    <DrawEdge
-      x1={x + 0.99}
-      y1={y - 0.5865}
-      x2={x + 0.99}
-      y2={y + 0.5865}
-      key={1}
-    />,
+    <DrawEdge x1={x + 0.99} y1={y - 0.5865} x2={x + 0.99} y2={y + 0.5865} key={1} />,
     <DrawEdge x1={x + 0.99} y1={y + 0.5865} x2={x} y2={y + 1.173} key={2} />,
     <DrawEdge x1={x} y1={y + 1.173} x2={x - 0.99} y2={y + 0.5865} key={3} />,
-    <DrawEdge
-      x1={x - 0.99}
-      y1={y + 0.5865}
-      x2={x - 0.99}
-      y2={y - 0.5865}
-      key={4}
-    />,
+    <DrawEdge x1={x - 0.99} y1={y + 0.5865} x2={x - 0.99} y2={y - 0.5865} key={4} />,
     <DrawEdge x1={x - 0.99} y1={y - 0.5865} x2={x} y2={y - 1.173} key={5} />,
   ];
 
-  const hexesTouchingSecondHouseForEachPlayer: Record<string, Resource[]> = {};
-
-  for (const playerName of Object.keys(playerPlacements)) {
-    const placements = playerPlacements[playerName];
-    if (placements.length < 2) {
-      continue;
-    }
-
-    const secondHouse = placements[1].house;
-    const [x, y] = secondHouse.split("#")[0].split(",").map(Number);
-
-    if (!hexesTouchingSecondHouseForEachPlayer[playerName]) {
-      hexesTouchingSecondHouseForEachPlayer[playerName] = [];
-    }
-
-    // const getAllVerticesOfHex = (x: number, y: number) => [
-    //   { x: x, y: y - 1 },
-    //   { x: x + 0.866, y: y - 0.5 },
-    //   { x: x + 0.866, y: y + 0.5 },
-    //   { x: x, y: y + 1 },
-    //   { x: x - 0.866, y: y + 0.5 },
-    //   { x: x - 0.866, y: y - 0.5 },
-    // ];
-
-    // Find the hexes touching the second house
-    const hexesTouchingSecondHouse = board.filter(
-      (hex) => Math.sqrt((hex.x - x) ** 2 + (hex.y - y) ** 2) < 1.2
-    );
-
-    const resources = hexesTouchingSecondHouse.map((hex) => hex.resource);
-
-    hexesTouchingSecondHouseForEachPlayer[playerName] = resources.filter(
-      (resource) => resource !== "desert"
-    ) as Resource[];
-  }
-
-  const currentPlayerIndex = playerTurns[players.length as NumberOfPlayers]?.[playerTurn] ?? 0;
-  const currentPlayer = players[currentPlayerIndex];
-  const isLastTurn = playerTurns[players.length as NumberOfPlayers]?.length - 1 === playerTurn;
-
   return (
-    <div className="flex flex-col justify-center items-center">
-      {invertTiles && currentPlayer && (
+    <div className="flex flex-col justify-center items-center w-full h-full">
+      {isSurpriseMode && (
         <>
           <PlayerTurnBar
             currentPlayer={currentPlayer}
-            onNext={handlePlayerTurn}
+            placementPhase={placementPhase}
+            onConfirm={handleConfirm}
+            onUndo={handleUndo}
             isLastTurn={isLastTurn}
             onReveal={handleReveal}
+            turnNumber={playerTurn + 1}
+            totalTurns={turnOrder?.length ?? 0}
           />
           {reveal &&
             Object.keys(playerPlacements).map((playerName) => (
               <p key={playerName} className="text-sm text-text-primary py-1">
                 <span
                   style={{
-                    color: players.filter(
-                      (player) => player.name === playerName
-                    )[0].color,
+                    color: players.find((p) => p.name === playerName)?.color,
                   }}
                 >
                   {playerName}
@@ -362,6 +469,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       <svg
         viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
         preserveAspectRatio="xMidYMid meet"
+        className="w-full h-full max-w-[600px]"
       >
         {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
           <React.Fragment key={index}>
@@ -381,17 +489,10 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
               rotation={60}
               resource={board[index].resource as string}
               number={board[index].number}
-              isHovered={hoveredHex === index}
-              onHover={() => setHoveredHex(index)}
-              onHoverEnd={() => setHoveredHex(null)}
               reveal={reveal}
             />
-            {allEdges(hex.x, hex.y).filter((_, index) =>
-              hex.edges.includes(index)
-            )}
-            {allVertices(hex.x, hex.y).filter((_, index) =>
-              hex.vertices.includes(index)
-            )}
+            {allEdges(hex.x, hex.y).filter((_, i) => hex.edges.includes(i))}
+            {allVertices(hex.x, hex.y).filter((_, i) => hex.vertices.includes(i))}
           </React.Fragment>
         ))}
       </svg>

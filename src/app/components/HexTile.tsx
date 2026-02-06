@@ -29,9 +29,6 @@ interface HexTileProps {
   rotation: number;
   resource: string;
   number?: number;
-  isHovered: boolean;
-  onHover: () => void;
-  onHoverEnd: () => void;
   reveal?: boolean;
   animationDelay?: number;
   animationPhase?: "idle" | "tiles" | "colors" | "numbers" | "complete";
@@ -44,9 +41,6 @@ export const HexTile: React.FC<HexTileProps> = ({
   rotation,
   resource,
   number,
-  isHovered,
-  onHover,
-  onHoverEnd,
   reveal = true,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   animationDelay = 0,
@@ -58,18 +52,13 @@ export const HexTile: React.FC<HexTileProps> = ({
   const showNumbers = reveal && (animationPhase === "numbers" || animationPhase === "complete");
   const color = !reveal ? resourceColors.inverted : resourceColors[resource];
   const isHighProb = number === 6 || number === 8;
-  const scale = isHovered ? 1.05 : 1;
 
   if (!visible && animationPhase !== "complete") return null;
 
   return (
     <g
-      transform={`translate(${x}, ${y}) scale(${scale})`}
-      onMouseEnter={onHover}
-      onMouseLeave={onHoverEnd}
-      style={{
-        transition: "transform 0.2s ease",
-      }}
+      transform={`translate(${x}, ${y})`}
+      className="hex-tile"
     >
       {/* Hex shape */}
       <polygon
@@ -102,6 +91,7 @@ export const HexTile: React.FC<HexTileProps> = ({
           fontSize="0.35"
           style={{
             transition: "opacity 0.3s ease",
+            pointerEvents: "none",
           }}
         >
           {icons[resource]}
@@ -110,14 +100,14 @@ export const HexTile: React.FC<HexTileProps> = ({
 
       {/* Desert icon */}
       {showContent && resource === "desert" && (
-        <text x="0" y="0.1" textAnchor="middle" fontSize="0.4">
+        <text x="0" y="0.1" textAnchor="middle" fontSize="0.4" style={{ pointerEvents: "none" }}>
           {"\u{1F3DC}\uFE0F"}
         </text>
       )}
 
       {/* Number token */}
       {showNumbers && number && (
-        <g>
+        <g style={{ pointerEvents: "none" }}>
           <circle
             cx="0"
             cy="0.35"
@@ -149,6 +139,7 @@ export const HexTile: React.FC<HexTileProps> = ({
           fontSize="0.4"
           fill="#1A6B6B"
           opacity="0.6"
+          style={{ pointerEvents: "none" }}
         >
           ?
         </text>
