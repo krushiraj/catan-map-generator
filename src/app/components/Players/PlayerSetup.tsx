@@ -55,6 +55,7 @@ export const PlayerSetup: React.FC<PlayerSetupProps> = ({
       }
       setPlayers(newPlayers);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numberOfPlayers]);
 
   return (
