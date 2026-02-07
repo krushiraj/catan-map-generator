@@ -54,6 +54,17 @@ interface PlayerPlacements {
   [playerName: string]: Placement[];
 }
 
+interface ViewState {
+  centerX: number;
+  centerY: number;
+  zoom: number;
+}
+
+const DEFAULT_VIEW: ViewState = { centerX: 0, centerY: 0, zoom: 1 };
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 4;
+const DRAG_THRESHOLD = 5; // pixels
+
 interface CatanBoardProps {
   numberOfPlayer: NumberOfPlayers;
   sameNumberShouldTouch: boolean;
@@ -62,6 +73,12 @@ interface CatanBoardProps {
   invertTiles: boolean;
   reset: boolean;
   players: Player[];
+  boardRef?: React.MutableRefObject<{ resource?: Resource; number?: number }[]>;
+  housesRef?: React.MutableRefObject<Set<string>>;
+  roadsRef?: React.MutableRefObject<Set<string>>;
+  initialBoardData?: { resource: Resource; number: number }[];
+  initialHouses?: string[];
+  initialRoads?: string[];
 }
 
 export const CatanBoard: React.FC<CatanBoardProps> = ({
@@ -72,6 +89,12 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   invertTiles,
   players,
   reset,
+  boardRef,
+  housesRef,
+  roadsRef,
+  initialBoardData,
+  initialHouses,
+  initialRoads,
 }) => {
   const [board, setBoard] = useState<HexPosition[]>([]);
   const [houses, setHouses] = useState<Set<string>>(new Set());
@@ -81,6 +104,25 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   const [reveal, setReveal] = useState(true);
   const [placementPhase, setPlacementPhase] = useState<PlacementPhase>("settlement");
   const [resourcesExpanded, setResourcesExpanded] = useState(true);
+  const [viewState, setViewState] = useState<ViewState>(DEFAULT_VIEW);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // SVG element ref
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  // Mutable refs for pan/zoom (avoid stale closures in native listeners)
+  const isPanningRef = useRef(false);
+  const wasDraggedRef = useRef(false);
+  const panStartScreenRef = useRef({ x: 0, y: 0 });
+  const panStartCenterRef = useRef({ x: 0, y: 0 });
+  const touchStateRef = useRef({ distance: 0, midX: 0, midY: 0 });
+  const sharedDataConsumedRef = useRef(false);
+
+  // Stale-closure-safe refs synced from state
+  const viewStateRef = useRef(viewState);
+  viewStateRef.current = viewState;
+  const numberOfPlayerRef = useRef(numberOfPlayer);
+  numberOfPlayerRef.current = numberOfPlayer;
 
   const turnOrder = playerTurns[players.length as NumberOfPlayers];
   const currentPlayerIndex = turnOrder?.[playerTurn] ?? 0;
@@ -88,22 +130,53 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   const isLastTurn = turnOrder?.length - 1 === playerTurn;
   const isSurpriseMode = invertTiles && currentPlayer;
 
+  // Compute dynamic viewBox from pan/zoom state
+  const baseSize = numberOfPlayer === 4 ? 12 : 16;
+  const baseOffset = numberOfPlayer === 4 ? -0.5 : 0;
+  const computedViewBox = useMemo(() => {
+    const vw = baseSize / viewState.zoom;
+    const vh = baseSize / viewState.zoom;
+    const x = baseOffset + viewState.centerX - vw / 2;
+    const y = baseOffset + viewState.centerY - vh / 2;
+    return `${x} ${y} ${vw} ${vh}`;
+  }, [viewState, baseSize, baseOffset]);
+
+  // Helper: get base dimensions for current player count
+  const getBaseSize = useCallback(() => {
+    return numberOfPlayerRef.current === 4 ? 12 : 16;
+  }, []);
+
   // Reset everything on new board generation
   useEffect(() => {
-    setBoard(
-      createInitialBoard(
-        numberOfPlayer,
-        sameNumberShouldTouch,
-        sameResourcesShouldTouch,
-        scarceResource
-      )
+    const newBoard = createInitialBoard(
+      numberOfPlayer,
+      sameNumberShouldTouch,
+      sameResourcesShouldTouch,
+      scarceResource
     );
-    setReveal(!invertTiles);
-    setHouses(new Set());
-    setRoads(new Set());
+
+    // If we have shared data that hasn't been consumed yet, override with it
+    if (initialBoardData && !sharedDataConsumedRef.current) {
+      for (let i = 0; i < newBoard.length && i < initialBoardData.length; i++) {
+        newBoard[i].resource = initialBoardData[i].resource;
+        newBoard[i].number = initialBoardData[i].number;
+      }
+      setBoard(newBoard);
+      setHouses(new Set(initialHouses ?? []));
+      setRoads(new Set(initialRoads ?? []));
+      setReveal(true);
+      sharedDataConsumedRef.current = true;
+    } else {
+      setBoard(newBoard);
+      setHouses(new Set());
+      setRoads(new Set());
+      setReveal(!invertTiles);
+    }
+
     setPlayerPlacements({});
     setPlayerTurn(0);
     setPlacementPhase("settlement");
+    setViewState(DEFAULT_VIEW);
   }, [
     numberOfPlayer,
     sameNumberShouldTouch,
@@ -111,7 +184,23 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     scarceResource,
     reset,
     invertTiles,
+    initialBoardData,
+    initialHouses,
+    initialRoads,
   ]);
+
+  // Sync board state to parent refs for sharing
+  useEffect(() => {
+    if (boardRef) boardRef.current = board;
+  }, [board, boardRef]);
+
+  useEffect(() => {
+    if (housesRef) housesRef.current = houses;
+  }, [houses, housesRef]);
+
+  useEffect(() => {
+    if (roadsRef) roadsRef.current = roads;
+  }, [roads, roadsRef]);
 
   // Track previous player colors to detect changes and sync placements
   const prevPlayersRef = useRef<Player[]>(players);
@@ -316,8 +405,227 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     return valid;
   }, [isSurpriseMode, placementPhase, allEdgePositions, isValidRoad, roads]);
 
+  // --- Pan & zoom event handlers ---
+
+  const clampCenter = useCallback(
+    (cx: number, cy: number, zoom: number) => {
+      const bs = getBaseSize();
+      const maxPan = bs * 0.6;
+      return {
+        centerX: Math.max(-maxPan, Math.min(maxPan, cx)),
+        centerY: Math.max(-maxPan, Math.min(maxPan, cy)),
+        zoom,
+      };
+    },
+    [getBaseSize]
+  );
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      // Only start pan on primary button (left click / single touch)
+      if (e.button !== 0) return;
+      isPanningRef.current = true;
+      wasDraggedRef.current = false;
+      panStartScreenRef.current = { x: e.clientX, y: e.clientY };
+      panStartCenterRef.current = {
+        x: viewStateRef.current.centerX,
+        y: viewStateRef.current.centerY,
+      };
+      (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+    },
+    []
+  );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      if (!isPanningRef.current) return;
+      const dx = e.clientX - panStartScreenRef.current.x;
+      const dy = e.clientY - panStartScreenRef.current.y;
+
+      if (
+        !wasDraggedRef.current &&
+        Math.abs(dx) < DRAG_THRESHOLD &&
+        Math.abs(dy) < DRAG_THRESHOLD
+      ) {
+        return;
+      }
+
+      if (!wasDraggedRef.current) {
+        wasDraggedRef.current = true;
+        setIsDragging(true);
+      }
+
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const vs = viewStateRef.current;
+      const bs = getBaseSize();
+      const vw = bs / vs.zoom;
+      const vh = bs / vs.zoom;
+
+      // Convert screen pixel delta to SVG coordinate delta
+      const dxSvg = dx * (vw / rect.width);
+      const dySvg = dy * (vh / rect.height);
+
+      setViewState(
+        clampCenter(
+          panStartCenterRef.current.x - dxSvg,
+          panStartCenterRef.current.y - dySvg,
+          vs.zoom
+        )
+      );
+    },
+    [getBaseSize, clampCenter]
+  );
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      isPanningRef.current = false;
+      setIsDragging(false);
+      (e.currentTarget as SVGSVGElement).releasePointerCapture(e.pointerId);
+    },
+    []
+  );
+
+  const handleClickCapture = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      // Only reset the drag flag when clicking on the SVG background itself
+      if (wasDraggedRef.current && e.target === e.currentTarget) {
+        wasDraggedRef.current = false;
+      }
+    },
+    []
+  );
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      // Don't reset if double-clicking an interactive element (vertex/edge)
+      const target = e.target as Element;
+      if (target.classList.contains("cursor-pointer")) return;
+      setViewState(DEFAULT_VIEW);
+    },
+    []
+  );
+
+  // Wheel zoom (native listener for non-passive preventDefault)
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const vs = viewStateRef.current;
+      const bs = getBaseSize();
+      const factor = e.deltaY > 0 ? 0.92 : 1.08;
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, vs.zoom * factor));
+
+      // Zoom toward cursor: compute SVG coord under mouse
+      const rect = svg.getBoundingClientRect();
+      const vw = bs / vs.zoom;
+      const vh = bs / vs.zoom;
+      const svgX = vs.centerX - vw / 2 + (e.clientX - rect.left) / rect.width * vw;
+      const svgY = vs.centerY - vh / 2 + (e.clientY - rect.top) / rect.height * vh;
+
+      // After zoom, the same screen pixel should map to the same SVG coord
+      const newVw = bs / newZoom;
+      const newVh = bs / newZoom;
+      const newCenterX = svgX - (e.clientX - rect.left) / rect.width * newVw + newVw / 2;
+      const newCenterY = svgY - (e.clientY - rect.top) / rect.height * newVh + newVh / 2;
+
+      setViewState(clampCenter(newCenterX, newCenterY, newZoom));
+    };
+
+    svg.addEventListener("wheel", handleWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", handleWheel);
+  }, [getBaseSize, clampCenter]);
+
+  // Pinch-to-zoom (native touch listeners for non-passive preventDefault)
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const getTouchDistance = (t1: Touch, t2: Touch) =>
+      Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
+    const getTouchMidpoint = (t1: Touch, t2: Touch) => ({
+      x: (t1.clientX + t2.clientX) / 2,
+      y: (t1.clientY + t2.clientY) / 2,
+    });
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length >= 2) {
+        e.preventDefault();
+        // Cancel single-finger pan
+        isPanningRef.current = false;
+        const d = getTouchDistance(e.touches[0], e.touches[1]);
+        const mid = getTouchMidpoint(e.touches[0], e.touches[1]);
+        touchStateRef.current = { distance: d, midX: mid.x, midY: mid.y };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length < 2) return;
+      e.preventDefault();
+      const vs = viewStateRef.current;
+      const bs = getBaseSize();
+      const rect = svg.getBoundingClientRect();
+
+      const d = getTouchDistance(e.touches[0], e.touches[1]);
+      const mid = getTouchMidpoint(e.touches[0], e.touches[1]);
+      const prevState = touchStateRef.current;
+
+      // Pinch ratio
+      const ratio = d / prevState.distance;
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, vs.zoom * ratio));
+
+      // Midpoint delta for pan
+      const vw = bs / vs.zoom;
+      const vh = bs / vs.zoom;
+      const dxSvg = (mid.x - prevState.midX) * (vw / rect.width);
+      const dySvg = (mid.y - prevState.midY) * (vh / rect.height);
+
+      // Zoom toward pinch midpoint
+      const svgX = vs.centerX - vw / 2 + (mid.x - rect.left) / rect.width * vw;
+      const svgY = vs.centerY - vh / 2 + (mid.y - rect.top) / rect.height * vh;
+      const newVw = bs / newZoom;
+      const newVh = bs / newZoom;
+      const newCenterX =
+        svgX - (mid.x - rect.left) / rect.width * newVw + newVw / 2 - dxSvg;
+      const newCenterY =
+        svgY - (mid.y - rect.top) / rect.height * newVh + newVh / 2 - dySvg;
+
+      setViewState(clampCenter(newCenterX, newCenterY, newZoom));
+      touchStateRef.current = { distance: d, midX: mid.x, midY: mid.y };
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        // Going from 2 fingers to 1: reset pan start to remaining finger
+        panStartScreenRef.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        };
+        panStartCenterRef.current = {
+          x: viewStateRef.current.centerX,
+          y: viewStateRef.current.centerY,
+        };
+        isPanningRef.current = true;
+      }
+    };
+
+    svg.addEventListener("touchstart", handleTouchStart, { passive: false });
+    svg.addEventListener("touchmove", handleTouchMove, { passive: false });
+    svg.addEventListener("touchend", handleTouchEnd);
+    return () => {
+      svg.removeEventListener("touchstart", handleTouchStart);
+      svg.removeEventListener("touchmove", handleTouchMove);
+      svg.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [getBaseSize, clampCenter]);
+
   const handleVertexClick = useCallback(
     (x: number, y: number) => {
+      if (wasDraggedRef.current) { wasDraggedRef.current = false; return; }
       if (!isSurpriseMode || placementPhase !== "settlement" || !currentPlayer) return;
       if (!isValidSettlement(x, y)) return;
 
@@ -340,6 +648,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
 
   const handleEdgeClick = useCallback(
     (x1: number, y1: number, x2: number, y2: number) => {
+      if (wasDraggedRef.current) { wasDraggedRef.current = false; return; }
       if (!isSurpriseMode || placementPhase !== "road" || !currentPlayer) return;
       if (!isValidRoad(x1, y1, x2, y2)) return;
 
@@ -518,7 +827,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   ];
 
   return (
-    <div className="flex flex-col justify-center items-center w-full h-full">
+    <div className="flex flex-col justify-center items-center w-full h-full min-h-0">
       {isSurpriseMode && !reveal && (
         <PlayerTurnBar
           currentPlayer={currentPlayer}
@@ -531,7 +840,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
           totalTurns={turnOrder?.length ?? 0}
         />
       )}
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full min-h-0">
         {reveal && Object.keys(playerPlacements).length > 0 && (
           <div className="absolute top-0 left-0 right-0 z-10 mt-1 mx-1 rounded-xl overflow-hidden border border-border bg-bg-surface/80">
             <button
@@ -568,9 +877,16 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
           </div>
         )}
         <svg
-          viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
+          ref={svgRef}
+          viewBox={computedViewBox}
           preserveAspectRatio="xMidYMid meet"
-          className="w-full h-full max-w-[600px]"
+          className={`w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          style={{ touchAction: 'none' }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onClickCapture={handleClickCapture}
+          onDoubleClick={handleDoubleClick}
         >
         {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
           <React.Fragment key={index}>
@@ -582,17 +898,27 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
             />
           </React.Fragment>
         ))}
+        {/* Layer 1: All hex tiles first */}
         {board.map((hex, index) => (
-          <React.Fragment key={`${index}-${hex.x},${hex.y}`}>
-            <HexTile
-              x={hex.x}
-              y={hex.y}
-              rotation={60}
-              resource={board[index].resource as string}
-              number={board[index].number}
-              reveal={reveal}
-            />
+          <HexTile
+            key={`hex-${index}-${hex.x},${hex.y}`}
+            x={hex.x}
+            y={hex.y}
+            rotation={60}
+            resource={board[index].resource as string}
+            number={board[index].number}
+            reveal={reveal}
+          />
+        ))}
+        {/* Layer 2: All edges on top of hex tiles */}
+        {board.map((hex, index) => (
+          <React.Fragment key={`edges-${index}-${hex.x},${hex.y}`}>
             {allEdges(hex.x, hex.y).filter((_, i) => hex.edges.includes(i))}
+          </React.Fragment>
+        ))}
+        {/* Layer 3: All vertices on top of everything */}
+        {board.map((hex, index) => (
+          <React.Fragment key={`verts-${index}-${hex.x},${hex.y}`}>
             {allVertices(hex.x, hex.y).filter((_, i) => hex.vertices.includes(i))}
           </React.Fragment>
         ))}

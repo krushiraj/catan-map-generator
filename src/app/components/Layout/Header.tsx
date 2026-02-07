@@ -13,7 +13,7 @@ export const Header: React.FC<HeaderProps> = ({ onShare, surpriseMode }) => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-4 glass-surface border-b border-border ${
+      className={`shrink-0 z-50 h-12 flex items-center justify-between px-4 glass-surface border-b border-border ${
         surpriseMode
           ? "border-b-2 border-b-transparent bg-gradient-to-r from-accent-gold/20 via-resource-sea/20 to-accent-gold/20"
           : ""

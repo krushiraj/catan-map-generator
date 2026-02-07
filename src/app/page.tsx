@@ -5,12 +5,13 @@ import { CatanBoard } from "./components/Map";
 import { Header } from "./components/Layout/Header";
 import { BottomSheet } from "./components/Controls/BottomSheet";
 import { SidePanel } from "./components/Layout/SidePanel";
+import { Toast } from "./components/Share/Toast";
 import { useMediaLayout } from "./hooks/useMediaLayout";
+import { encodeMap, decodeMap, type MapData } from "./utils/mapEncoding";
 import type { NumberOfPlayers, Resource, Player } from "./utils/board";
 
 const HomePage = () => {
   const layout = useMediaLayout();
-  const boardRef = useRef<HTMLDivElement>(null);
 
   const [numPlayers, setNumPlayers] = useState<NumberOfPlayers>(4);
   const [noSameResources, setNoSameResources] = useState(false);
@@ -20,6 +21,14 @@ const HomePage = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [resetMap, setResetMap] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [initialMapData, setInitialMapData] = useState<MapData | null>(null);
+  const sharedDataConsumedRef = useRef(false);
+
+  // Refs to access board state from CatanBoard for URL sharing
+  const boardDataRef = useRef<{ resource?: Resource; number?: number }[]>([]);
+  const housesRef = useRef<Set<string>>(new Set());
+  const roadsRef = useRef<Set<string>>(new Set());
 
   const handleGenerate = useCallback(() => {
     setResetMap((prev) => !prev);
@@ -28,26 +37,30 @@ const HomePage = () => {
   }, []);
 
   const handleShare = useCallback(async () => {
-    if (!boardRef.current) return;
-    const { toPng } = await import("html-to-image");
     try {
-      const dataUrl = await toPng(boardRef.current, {
-        pixelRatio: 2,
-        backgroundColor: "#0D0D0F",
-      });
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], "catan-map.png", { type: "image/png" });
+      const encoded = encodeMap(
+        boardDataRef.current,
+        {
+          numPlayers,
+          noSameResources,
+          noSameNumbers,
+          scarceResource,
+        },
+        housesRef.current,
+        roadsRef.current
+      );
+      const url = `${window.location.origin}${window.location.pathname}?m=${encoded}`;
+
       if (navigator.share) {
-        await navigator.share({ title: "Catan Map", files: [file] });
+        await navigator.share({ title: "Catan Map", url });
       } else {
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": blob }),
-        ]);
+        await navigator.clipboard.writeText(url);
+        setToast("Link copied to clipboard!");
       }
     } catch {
-      // silently fail
+      setToast("Failed to share map");
     }
-  }, []);
+  }, [numPlayers, noSameResources, noSameNumbers, scarceResource]);
 
   const controlProps = {
     numPlayers,
@@ -78,6 +91,21 @@ const HomePage = () => {
     return () => window.removeEventListener("keydown", handler);
   }, [handleGenerate]);
 
+  // Decode shared map from URL ?m= param on mount
+  useEffect(() => {
+    if (sharedDataConsumedRef.current) return;
+    const encoded = new URLSearchParams(window.location.search).get("m");
+    if (!encoded) return;
+    const decoded = decodeMap(encoded);
+    if (!decoded) return;
+    setNumPlayers(decoded.settings.numPlayers);
+    setNoSameResources(decoded.settings.noSameResources);
+    setNoSameNumbers(decoded.settings.noSameNumbers);
+    setScarceResource(decoded.settings.scarceResource);
+    setInitialMapData(decoded);
+    sharedDataConsumedRef.current = true;
+  }, []);
+
   if (!layout) {
     return (
       <div className="h-dvh flex items-center justify-center">
@@ -95,18 +123,18 @@ const HomePage = () => {
       />
 
       {/* Main Content */}
-      <main className={`flex-1 flex pt-12 overflow-hidden ${
+      <main className={`flex-1 min-h-0 flex overflow-hidden ${
         layout === "desktop" ? "max-w-[1280px] mx-auto w-full" : ""
       }`}>
         {/* Desktop: Left Panel */}
         {layout === "desktop" && (
-          <aside className="w-[280px] shrink-0">
+          <aside className="w-[300px] shrink-0">
             <SidePanel {...controlProps} />
           </aside>
         )}
 
         {/* Board Area */}
-        <div className="flex-1 flex items-center justify-center relative p-4" ref={boardRef}>
+        <div className="flex-1 min-h-0 flex items-center justify-center relative p-4">
           {/* Vignette overlay */}
           <div className="absolute inset-0 vignette pointer-events-none" />
 
@@ -114,10 +142,16 @@ const HomePage = () => {
             numberOfPlayer={numPlayers}
             sameResourcesShouldTouch={!noSameResources}
             sameNumberShouldTouch={!noSameNumbers}
-            invertTiles={players.length === numPlayers ? surpriseMode : false}
+            invertTiles={surpriseMode}
             scarceResource={scarceResource as Resource}
             reset={resetMap}
             players={players}
+            boardRef={boardDataRef}
+            housesRef={housesRef}
+            roadsRef={roadsRef}
+            initialBoardData={initialMapData?.hexes}
+            initialHouses={initialMapData?.houses}
+            initialRoads={initialMapData?.roads}
           />
         </div>
 
@@ -131,6 +165,8 @@ const HomePage = () => {
 
       {/* Mobile: Bottom Sheet */}
       {layout === "mobile" && <BottomSheet {...controlProps} />}
+
+      <Toast message={toast || ""} visible={!!toast} onHide={() => setToast(null)} />
     </div>
   );
 };
