@@ -1,0 +1,131 @@
+/* Board generation animations */
+@keyframes tile-enter {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes number-drop {
+  0% {
+    transform: scale(0) translateY(-4px);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15) translateY(0);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes road-draw {
+  from {
+    stroke-dashoffset: var(--road-length);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Shimmer for generate button */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  50%, 100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Border loading animation */
+@keyframes border-sweep {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  50% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+/* Caustic light effect for hidden tiles */
+@keyframes caustic {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+}
+
+/* Fade up for toasts and sheet content */
+@keyframes fade-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Pulse glow for interactive elements */
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(212, 165, 70, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(212, 165, 70, 0.5));
+  }
+}
+
+/* Camera flash for share */
+@keyframes camera-flash {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Wave animation for sea border */
+@keyframes wave {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Tile shake for errors */
+@keyframes tile-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-3px);
+  }
+  40%, 80% {
+    transform: translateX(3px);
+  }
+}

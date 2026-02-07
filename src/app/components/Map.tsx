@@ -1,728 +1,58 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { HexTile } from "./HexTile";
 import { Vertex } from "./Vertex";
 import { Edge } from "./Edge";
-import { randomiser } from "../utils";
 import { TriangleTile } from "./TriangleTile";
+import {
+  createInitialBoard,
+  portPositions,
+  playerTurns,
+  type Resource,
+  type NumberOfPlayers,
+  type HexPosition,
+  type Player,
+} from "../utils/board";
+import { PlayerTurnBar, type PlacementPhase } from "./Players/PlayerTurnBar";
 
-// Define the types of resources
-export type Resource = "wood" | "brick" | "ore" | "hay" | "sheep" | "desert";
+export type { Resource, NumberOfPlayers, HexPosition, Player };
 
-export type NumberOfPlayers = 4 | 5 | 6;
+const RESOURCE_ICONS: Record<string, string> = {
+  wood: "\u{1FAB5}",
+  brick: "\u{1F9F1}",
+  ore: "\u{1FAA8}",
+  hay: "\u{1F33E}",
+  sheep: "\u{1F40F}",
+};
 
-interface HexPosition {
-  x: number;
-  y: number;
-  vertices: number[];
-  edges: number[];
-  adjacent: number[];
-  resource?: Resource;
-  number?: number;
+// Coordinate key helpers - we use # as delimiter since hex colors contain #
+const vertexKey = (x: number, y: number, color: string) => `${x},${y}${color}`;
+const edgeKey = (x1: number, y1: number, x2: number, y2: number, color: string) =>
+  `${x1},${y1}-${x2},${y2}${color}`;
+
+const coordsFromVertexKey = (key: string) => {
+  const [coords] = key.split("#");
+  const [x, y] = coords.split(",").map(Number);
+  return { x, y };
+};
+
+const dist = (x1: number, y1: number, x2: number, y2: number) =>
+  Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+
+// Minimum distance between two settlements (Catan distance rule)
+const MIN_SETTLEMENT_DIST = 1.2;
+// Max distance for an edge endpoint to "touch" a vertex
+const EDGE_VERTEX_TOLERANCE = 0.1;
+
+interface Placement {
+  house: string;
+  road: string;
 }
 
-const portPositions = {
-  4: [
-    {
-      x: -0.7,
-      y: -4.7,
-      resource: "all",
-      rotation: -30,
-    },
-    {
-      x: 2.7,
-      y: -4.6,
-      resource: "all",
-      rotation: 30,
-    },
-    {
-      x: -3.7,
-      y: -2.9,
-      resource: "sheep",
-      rotation: -30,
-    },
-    {
-      x: 4.4,
-      y: -1.7,
-      resource: "brick",
-      rotation: -30,
-    },
-    {
-      x: -5.4,
-      y: 0,
-      resource: "all",
-      rotation: -90,
-    },
-    {
-      x: 4.4,
-      y: 1.7,
-      resource: "wood",
-      rotation: 90,
-    },
-    {
-      x: -3.7,
-      y: 3,
-      resource: "ore",
-      rotation: -30,
-    },
-    {
-      x: -0.7,
-      y: 4.7,
-      resource: "hay",
-      rotation: -30,
-    },
-    {
-      x: 2.7,
-      y: 4.7,
-      resource: "all",
-      rotation: 30,
-    },
-  ],
-  6: [
-    {
-      x: -2.7,
-      y: -6.4,
-      resource: "all",
-      rotation: -30,
-    },
-    {
-      x: 0.7,
-      y: -6.4,
-      resource: "sheep",
-      rotation: 30,
-    },
-    {
-      x: 3.6,
-      y: -4.7,
-      resource: "all",
-      rotation: 30,
-    },
-    {
-      x: -5.4,
-      y: -1.7,
-      resource: "ore",
-      rotation: 30,
-    },
-    {
-      x: -5.6,
-      y: 1.3,
-      resource: "all",
-      rotation: -30,
-    },
-    {
-      x: -4.4,
-      y: 3.4,
-      resource: "hay",
-      rotation: 30,
-    },
-    {
-      x: -2.7,
-      y: 6.5,
-      resource: "all",
-      rotation: -30,
-    },
-    {
-      x: 0.7,
-      y: 6.5,
-      resource: "wood",
-      rotation: 30,
-    },
-    {
-      x: 3.4,
-      y: 5.2,
-      resource: "all",
-      rotation: 90,
-    },
-    {
-      x: 4.65,
-      y: 3.05,
-      resource: "brick",
-      rotation: 30,
-    },
-    {
-      x: 6.4,
-      y: 0,
-      resource: "all",
-      rotation: 90,
-    },
-  ],
-};
-
-// Helper function to create the initial board layout
-const createInitialBoard = (
-  numberOfPlayer: NumberOfPlayers,
-  sameNumberShouldTouch: boolean,
-  sameResourcesShouldTouch: boolean,
-  scarceResource: Resource
-): HexPosition[] => {
-  const resources: Resource[] = [
-    "wood",
-    "wood",
-    "wood",
-    "wood",
-    "brick",
-    "brick",
-    "brick",
-    "ore",
-    "ore",
-    "ore",
-    "hay",
-    "hay",
-    "hay",
-    "hay",
-    "sheep",
-    "sheep",
-    "sheep",
-    "sheep",
-    "desert",
-  ];
-
-  if (numberOfPlayer > 4) {
-    resources.push(
-      ...([
-        "wood",
-        "wood",
-        "brick",
-        "brick",
-        "ore",
-        "ore",
-        "hay",
-        "hay",
-        "sheep",
-        "sheep",
-        "desert",
-      ] as Resource[])
-    );
-  }
-
-  const numbers = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
-
-  if (numberOfPlayer > 4) {
-    numbers.push(...[...new Set(numbers)]);
-  }
-
-  const hexPositions =
-    numberOfPlayer === 4
-      ? [
-          // Row 1 (3 hexes)
-          {
-            x: -2,
-            y: -3.46,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [1, 3, 4],
-          },
-          {
-            x: 0,
-            y: -3.46,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [0, 2, 4, 5],
-          },
-          {
-            x: 2,
-            y: -3.46,
-            vertices: [0, 5, 1],
-            edges: [4, 5, 0, 1],
-            adjacent: [5, 6],
-          },
-          // Row 2 (4 hexes)
-          {
-            x: -3,
-            y: -1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [0, 4, 7, 8],
-          },
-          {
-            x: -1,
-            y: -1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [0, 1, 3, 5, 8, 9],
-          },
-          {
-            x: 1,
-            y: -1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [1, 2, 4, 6, 9, 10],
-          },
-          {
-            x: 3,
-            y: -1.73,
-            vertices: [0, 5, 1],
-            edges: [4, 5, 0, 1],
-            adjacent: [2, 5, 10, 11],
-          },
-          // Row 3 (5 hexes)
-          {
-            x: -4,
-            y: 0,
-            vertices: [0, 5, 4],
-            edges: [4, 5, 0, 3],
-            adjacent: [3, 8, 12],
-          },
-          {
-            x: -2,
-            y: 0,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [3, 4, 7, 9, 12, 13],
-          },
-          {
-            x: 0,
-            y: 0,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [4, 5, 8, 10, 13, 14],
-          },
-          {
-            x: 2,
-            y: 0,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [5, 6, 9, 11, 14, 15],
-          },
-          {
-            x: 4,
-            y: 0,
-            vertices: [0, 5, 2, 1],
-            edges: [4, 5, 0, 1, 2],
-            adjacent: [6, 10, 15],
-          },
-          // Row 4 (4 hexes)
-          {
-            x: -3,
-            y: 1.73,
-            vertices: [0, 5, 4],
-            edges: [4, 5, 0, 3],
-            adjacent: [7, 8, 13, 16],
-          },
-          {
-            x: -1,
-            y: 1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [8, 9, 12, 14, 16, 17],
-          },
-          {
-            x: 1,
-            y: 1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [9, 10, 13, 15, 17, 18],
-          },
-          {
-            x: 3,
-            y: 1.73,
-            vertices: [0, 5, 2, 1],
-            edges: [4, 5, 0, 1, 2],
-            adjacent: [10, 11, 14, 18],
-          },
-          // Row 5 (3 hexes)
-          {
-            x: -2,
-            y: 3.46,
-            vertices: [0, 5, 3, 2, 4],
-            edges: [4, 5, 0, 2, 3],
-            adjacent: [12, 13, 17],
-          },
-          {
-            x: 0,
-            y: 3.46,
-            vertices: [0, 5, 3, 2, 4],
-            edges: [4, 5, 0, 2, 3],
-            adjacent: [13, 14, 16, 18],
-          },
-          {
-            x: 2,
-            y: 3.46,
-            vertices: [0, 5, 1, 3, 2, 4],
-            edges: [4, 5, 0, 1, 2, 3],
-            adjacent: [14, 15, 17],
-          },
-        ]
-      : [
-          // Row 1 (3 hexes)
-          {
-            x: -2,
-            y: -5.19,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [1, 3, 4],
-          },
-          {
-            x: 0,
-            y: -5.19,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [0, 2, 4, 5],
-          },
-          {
-            x: 2,
-            y: -5.19,
-            vertices: [0, 5, 1],
-            edges: [4, 5, 0, 1],
-            adjacent: [1, 5, 6],
-          },
-          // Row 2 (4 hexes)
-          {
-            x: -3,
-            y: -3.46,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [0, 4, 7, 8],
-          },
-          {
-            x: -1,
-            y: -3.46,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [0, 1, 3, 5, 8, 9],
-          },
-          {
-            x: 1,
-            y: -3.46,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [1, 2, 4, 6, 9, 10],
-          },
-          {
-            x: 3,
-            y: -3.46,
-            vertices: [0, 5, 1],
-            edges: [4, 5, 0, 1],
-            adjacent: [2, 5, 10, 11],
-          },
-          // Row 3 (5 hexes)
-          {
-            x: -4,
-            y: -1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [3, 8, 12, 13],
-          },
-          {
-            x: -2,
-            y: -1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [3, 4, 7, 9, 13, 14],
-          },
-          {
-            x: 0,
-            y: -1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [4, 5, 8, 10, 14, 15],
-          },
-          {
-            x: 2,
-            y: -1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [5, 6, 9, 11, 15, 16],
-          },
-          {
-            x: 4,
-            y: -1.73,
-            vertices: [0, 5, 1],
-            edges: [4, 5, 0, 1],
-            adjacent: [6, 10, 16, 17],
-          },
-          // Row 4 (6 hexes)
-          {
-            x: -5,
-            y: 0,
-            vertices: [0, 4, 5],
-            edges: [3, 4, 5, 0],
-            adjacent: [7, 13, 18],
-          },
-          {
-            x: -3,
-            y: 0,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [7, 8, 12, 14, 18, 19],
-          },
-          {
-            x: -1,
-            y: 0,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [8, 9, 13, 15, 19, 20],
-          },
-          {
-            x: 1,
-            y: 0,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [9, 10, 14, 16, 20, 21],
-          },
-          {
-            x: 3,
-            y: 0,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [10, 11, 15, 17, 21, 22],
-          },
-          {
-            x: 5,
-            y: 0,
-            vertices: [0, 5, 1, 2],
-            edges: [4, 5, 0, 1, 2],
-            adjacent: [11, 16, 22],
-          },
-          // Row 5 (5 hexes)
-          {
-            x: -4,
-            y: 1.73,
-            vertices: [0, 4, 5],
-            edges: [3, 4, 5, 0],
-            adjacent: [12, 13, 19, 23],
-          },
-          {
-            x: -2,
-            y: 1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [13, 14, 18, 20, 23, 24],
-          },
-          {
-            x: 0,
-            y: 1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [14, 15, 19, 21, 24, 25],
-          },
-          {
-            x: 2,
-            y: 1.73,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [15, 16, 20, 22, 25, 26],
-          },
-          {
-            x: 4,
-            y: 1.73,
-            vertices: [0, 5, 1, 2],
-            edges: [1, 2, 4, 5, 0],
-            adjacent: [16, 17, 21, 26],
-          },
-          // Row 6 (4 hexes)
-          {
-            x: -3,
-            y: 3.46,
-            vertices: [0, 4, 5],
-            edges: [3, 4, 5, 0],
-            adjacent: [18, 19, 24, 27],
-          },
-          {
-            x: -1,
-            y: 3.46,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [19, 20, 23, 25, 27, 28],
-          },
-          {
-            x: 1,
-            y: 3.46,
-            vertices: [0, 5],
-            edges: [4, 5, 0],
-            adjacent: [20, 21, 24, 26, 28, 29],
-          },
-          {
-            x: 3,
-            y: 3.46,
-            vertices: [0, 5, 1, 2],
-            edges: [1, 2, 4, 5, 0],
-            adjacent: [21, 22, 25, 29],
-          },
-          // Row 7 (3 hexes)
-          {
-            x: -2,
-            y: 5.19,
-            vertices: [0, 3, 4, 5],
-            edges: [2, 3, 4, 5, 0],
-            adjacent: [23, 24, 28],
-          },
-          {
-            x: 0,
-            y: 5.19,
-            vertices: [0, 3, 4, 5],
-            edges: [2, 3, 4, 5, 0],
-            adjacent: [24, 25, 27, 29],
-          },
-          {
-            x: 2,
-            y: 5.19,
-            vertices: [0, 3, 4, 2, 5, 1],
-            edges: [2, 3, 4, 5, 0, 1],
-            adjacent: [25, 26, 28],
-          },
-        ];
-
-  const probabilities: Record<number, number> = {
-    6: 5,
-    8: 5,
-    9: 4,
-    5: 4,
-    4: 3,
-    10: 3,
-    3: 2,
-    11: 2,
-    2: 1,
-    12: 1,
-  };
-
-  const recursivelyAssignResourceAndNumber = (
-    hexPositions: HexPosition[],
-    idx: number,
-    availableResources: Resource[],
-    availableNumbers: number[]
-  ) => {
-    if (
-      idx === hexPositions.length &&
-      hexPositions.every((hex) => hex.resource)
-    ) {
-      return hexPositions;
-    }
-
-    const hex = hexPositions[idx];
-    const adjacentResources = hex.adjacent
-      .map((idx: number) => hexPositions[idx].resource)
-      .filter(Boolean);
-    const adjacentNumbers = hex.adjacent
-      .map((idx: number) => hexPositions[idx].number)
-      .filter(Boolean);
-
-    const resourceForHex = availableResources.find((resource) => {
-      if (!sameResourcesShouldTouch) {
-        return !adjacentResources.includes(resource);
-      }
-      return true;
-    });
-
-    if (!resourceForHex) {
-      return recursivelyAssignResourceAndNumber(
-        hexPositions,
-        0,
-        randomiser(resources),
-        randomiser(numbers)
-      );
-    }
-
-    const resourceIndex = availableResources.indexOf(resourceForHex);
-
-    let numberForHex =
-      availableNumbers.find((number) => {
-        if (!sameNumberShouldTouch) {
-          return !adjacentNumbers.includes(number);
-        }
-        return true;
-      }) || 0;
-
-    if (scarceResource && resourceForHex === scarceResource) {
-      // check if numberForHex has least probability among availableNumbers
-      // if not, find the number with least probability
-      // swap the number with numberForHex and update availableNumbers
-      const probabilitiesForAvailableNumbers = availableNumbers.map(
-        (number) => probabilities[number]
-      );
-      const probabilityForNumberForHex = probabilities[numberForHex];
-      const minProbability = Math.min(...probabilitiesForAvailableNumbers);
-
-      if (minProbability > 2 && probabilityForNumberForHex > 2) {
-        return recursivelyAssignResourceAndNumber(
-          hexPositions,
-          0,
-          randomiser(resources),
-          randomiser(numbers)
-        );
-      }
-
-      if (probabilityForNumberForHex > minProbability) {
-        const minProbabilityNumber = availableNumbers.find(
-          (number) => probabilities[number] === minProbability
-        );
-
-        if (minProbabilityNumber && minProbabilityNumber !== numberForHex) {
-          numberForHex = minProbabilityNumber;
-          const numberIndex = availableNumbers.indexOf(numberForHex);
-          availableNumbers[numberIndex] = numberForHex;
-        }
-      }
-    }
-
-    if (availableNumbers.length && !numberForHex) {
-      return recursivelyAssignResourceAndNumber(
-        hexPositions,
-        0,
-        randomiser(resources),
-        randomiser(numbers)
-      );
-    }
-
-    const numberIndex =
-      availableNumbers.length && availableNumbers.indexOf(numberForHex);
-
-    const newCopyOfHexPositions = [...hexPositions];
-    newCopyOfHexPositions[idx] = {
-      ...hex,
-      resource: resourceForHex,
-      number: resourceForHex !== "desert" ? numberForHex : undefined,
-    };
-
-    const newAvailableResources = [...availableResources];
-    newAvailableResources.splice(resourceIndex, 1);
-
-    const newAvailableNumbers = [...availableNumbers];
-    if (resourceForHex !== "desert") {
-      newAvailableNumbers.splice(numberIndex, 1);
-    }
-
-    const unsetAdjacentIdxs = hex.adjacent.filter(
-      (idx) => !newCopyOfHexPositions[idx].resource
-    );
-
-    const result: HexPosition[] = recursivelyAssignResourceAndNumber(
-      newCopyOfHexPositions,
-      idx + 1,
-      newAvailableResources,
-      newAvailableNumbers
-    );
-
-    if (!result.every((hex) => hex.resource)) {
-      return recursivelyAssignResourceAndNumber(
-        hexPositions,
-        0,
-        randomiser(resources),
-        randomiser(numbers)
-      );
-    }
-
-    return result;
-  };
-
-  return recursivelyAssignResourceAndNumber(
-    hexPositions as HexPosition[],
-    0,
-    randomiser(resources),
-    randomiser(numbers)
-  );
-};
-
-type PlayerColor =
-  | "red"
-  | "blue"
-  | "green"
-  | "yellow"
-  | "white"
-  | "orange"
-  | "brown";
+interface PlayerPlacements {
+  [playerName: string]: Placement[];
+}
 
 interface CatanBoardProps {
   numberOfPlayer: NumberOfPlayers;
@@ -731,16 +61,7 @@ interface CatanBoardProps {
   scarceResource: Resource;
   invertTiles: boolean;
   reset: boolean;
-  players: { name: string; color: PlayerColor }[];
-}
-
-interface Placement {
-  house: string;
-  road: string;
-}
-
-interface PlayerPlacement {
-  [key: string]: Placement[];
+  players: Player[];
 }
 
 export const CatanBoard: React.FC<CatanBoardProps> = ({
@@ -753,19 +74,21 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   reset,
 }) => {
   const [board, setBoard] = useState<HexPosition[]>([]);
-  const [hoveredHex, setHoveredHex] = useState<number | null>(null);
   const [houses, setHouses] = useState<Set<string>>(new Set());
   const [roads, setRoads] = useState<Set<string>>(new Set());
-  const [playerPlacements, setPlayerPlacements] = useState<PlayerPlacement>({});
+  const [playerPlacements, setPlayerPlacements] = useState<PlayerPlacements>({});
   const [playerTurn, setPlayerTurn] = useState(0);
   const [reveal, setReveal] = useState(true);
+  const [placementPhase, setPlacementPhase] = useState<PlacementPhase>("settlement");
+  const [resourcesExpanded, setResourcesExpanded] = useState(true);
 
-  const playerTurns = {
-    4: [0, 1, 2, 3, 3, 2, 1, 0],
-    5: [0, 1, 2, 3, 4, 4, 3, 2, 1, 0],
-    6: [0, 1, 2, 3, 4, 5, 5, 4, 3, 2, 1, 0],
-  };
+  const turnOrder = playerTurns[players.length as NumberOfPlayers];
+  const currentPlayerIndex = turnOrder?.[playerTurn] ?? 0;
+  const currentPlayer = players[currentPlayerIndex];
+  const isLastTurn = turnOrder?.length - 1 === playerTurn;
+  const isSurpriseMode = invertTiles && currentPlayer;
 
+  // Reset everything on new board generation
   useEffect(() => {
     setBoard(
       createInitialBoard(
@@ -776,6 +99,11 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       )
     );
     setReveal(!invertTiles);
+    setHouses(new Set());
+    setRoads(new Set());
+    setPlayerPlacements({});
+    setPlayerTurn(0);
+    setPlacementPhase("settlement");
   }, [
     numberOfPlayer,
     sameNumberShouldTouch,
@@ -785,163 +113,356 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     invertTiles,
   ]);
 
-  const handlePlayerTurn = () => setPlayerTurn(playerTurn + 1);
+  // Track previous player colors to detect changes and sync placements
+  const prevPlayersRef = useRef<Player[]>(players);
+  useEffect(() => {
+    const prev = prevPlayersRef.current;
+    prevPlayersRef.current = players;
 
-  const handleReveal = () => setReveal(true);
-
-  // Calculate positions for a hexagonal grid with horizontal gaps
-
-  const handleVertexClick = (x: number, y: number) => {
-    const currentPlayer =
-      players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
-
-    const key = `${x},${y}${currentPlayer.color}`;
-
-    for (const house of [...houses].filter((house: string) => house !== key)) {
-      const [houseX, houseY] = house.split("#")[0].split(",").map(Number);
-      const distance = Math.sqrt((houseX - x) ** 2 + (houseY - y) ** 2);
-      if (distance < 1.2) {
-        return;
+    // Build map of color changes
+    const colorMap = new Map<string, string>();
+    for (let i = 0; i < Math.min(prev.length, players.length); i++) {
+      if (prev[i].color !== players[i].color) {
+        colorMap.set(prev[i].color, players[i].color);
       }
     }
+    if (colorMap.size === 0) return;
 
-    let addingHouse = true;
+    // Use a temp prefix to avoid collisions during swaps
+    const tempPrefix = "__temp__";
+    const replaceColorInKey = (key: string, oldColor: string, newColor: string) =>
+      key.replace(oldColor, newColor);
 
-    setHouses((prevHouses) => {
-      const newHouses = new Set(prevHouses);
-      if (newHouses.has(key)) {
-        newHouses.delete(key);
-        addingHouse = false;
-      } else {
-        newHouses.add(key);
-      }
-      return newHouses;
-    });
-
-    if (addingHouse) {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
+    const rebuildSet = (set: Set<string>) => {
+      const arr = [...set];
+      // Pass 1: old -> temp
+      const intermediate = arr.map((key) => {
+        for (const [oldC] of colorMap) {
+          if (key.includes(oldC)) {
+            return replaceColorInKey(key, oldC, tempPrefix + oldC);
+          }
         }
-        newPlacements[currentPlayer.name].push({
-          house: key,
-          road: "",
+        return key;
+      });
+      // Pass 2: temp -> new
+      const final = intermediate.map((key) => {
+        for (const [oldC, newC] of colorMap) {
+          const temp = tempPrefix + oldC;
+          if (key.includes(temp)) {
+            return replaceColorInKey(key, temp, newC);
+          }
+        }
+        return key;
+      });
+      return new Set(final);
+    };
+
+    setHouses((prev) => rebuildSet(prev));
+    setRoads((prev) => rebuildSet(prev));
+    setPlayerPlacements((prev) => {
+      const updated: PlayerPlacements = {};
+      for (const [name, placements] of Object.entries(prev)) {
+        updated[name] = placements.map((p) => {
+          let house = p.house;
+          let road = p.road;
+          // Pass 1: old -> temp
+          for (const [oldC] of colorMap) {
+            if (house.includes(oldC)) house = replaceColorInKey(house, oldC, tempPrefix + oldC);
+            if (road.includes(oldC)) road = replaceColorInKey(road, oldC, tempPrefix + oldC);
+          }
+          // Pass 2: temp -> new
+          for (const [oldC, newC] of colorMap) {
+            const temp = tempPrefix + oldC;
+            if (house.includes(temp)) house = replaceColorInKey(house, temp, newC);
+            if (road.includes(temp)) road = replaceColorInKey(road, temp, newC);
+          }
+          return { house, road };
         });
-        return newPlacements;
-      });
-    } else {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
-        }
-        newPlacements[currentPlayer.name] = newPlacements[
-          currentPlayer.name
-        ].filter((placement) => placement.house !== key);
-        return newPlacements;
-      });
-    }
-  };
-
-  const handleEdgeClick = (x1: number, y1: number, x2: number, y2: number) => {
-    const currentPlayer =
-      players[playerTurns[players.length as NumberOfPlayers][playerTurn]];
-
-    const key = `${x1},${y1}-${x2},${y2}${currentPlayer.color}`;
-
-    const lastHouse =
-      playerPlacements[currentPlayer.name][
-        playerPlacements[currentPlayer.name].length - 1
-      ].house;
-    const [lastHouseX, lastHouseY] = lastHouse
-      .split("#")[0]
-      .split(",")
-      .map(Number);
-
-    const distance1 = Math.sqrt(
-      (x1 - lastHouseX) ** 2 + (y1 - lastHouseY) ** 2
-    );
-    const distance2 = Math.sqrt(
-      (x2 - lastHouseX) ** 2 + (y2 - lastHouseY) ** 2
-    );
-
-    if (distance1 > 0.1 && distance2 > 0.1) {
-      return; // Do not add the road if it doesn't align with the last clicked house
-    }
-
-    if (!currentPlayer) {
-      return;
-    }
-
-    if (!playerPlacements[currentPlayer.name]) {
-      return;
-    }
-
-    if (
-      !playerPlacements[currentPlayer.name][
-        playerPlacements[currentPlayer.name].length - 1
-      ]
-    ) {
-      return;
-    }
-
-    if (
-      !playerPlacements[currentPlayer.name][
-        playerPlacements[currentPlayer.name].length - 1
-      ].house
-    ) {
-      return;
-    }
-
-    let addingRoad = true;
-
-    setRoads((prevRoads) => {
-      const newRoads = new Set(prevRoads);
-      if (newRoads.has(key)) {
-        newRoads.delete(key);
-        addingRoad = false;
-      } else {
-        newRoads.add(key);
       }
-      return newRoads;
+      return updated;
     });
+  }, [players]);
 
-    if (addingRoad) {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
+  // Collect all vertex positions from the board for validation
+  const allVertexPositions = useMemo(() => {
+    const positions: { x: number; y: number }[] = [];
+    const seen = new Set<string>();
+    for (const hex of board) {
+      const verts = [
+        { x: hex.x, y: hex.y - 1.173 },
+        { x: hex.x + 0.99, y: hex.y - 0.5865 },
+        { x: hex.x + 0.99, y: hex.y + 0.5865 },
+        { x: hex.x, y: hex.y + 1.173 },
+        { x: hex.x - 0.99, y: hex.y + 0.5865 },
+        { x: hex.x - 0.99, y: hex.y - 0.5865 },
+      ];
+      for (const v of verts) {
+        const key = `${v.x.toFixed(3)},${v.y.toFixed(3)}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          positions.push(v);
         }
-        newPlacements[currentPlayer.name][
-          newPlacements[currentPlayer.name].length - 1
-        ].road = key;
-        return newPlacements;
-      });
-    } else {
-      setPlayerPlacements((prevPlacements) => {
-        const newPlacements = { ...prevPlacements };
-        if (!newPlacements[currentPlayer.name]) {
-          newPlacements[currentPlayer.name] = [];
-        }
-        newPlacements[currentPlayer.name][
-          newPlacements[currentPlayer.name].length - 1
-        ].road = "";
-        return newPlacements;
-      });
+      }
     }
-  };
+    return positions;
+  }, [board]);
+
+  // Collect all edge positions from the board
+  const allEdgePositions = useMemo(() => {
+    const edges: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    const seen = new Set<string>();
+    for (const hex of board) {
+      const verts = [
+        { x: hex.x, y: hex.y - 1.173 },
+        { x: hex.x + 0.99, y: hex.y - 0.5865 },
+        { x: hex.x + 0.99, y: hex.y + 0.5865 },
+        { x: hex.x, y: hex.y + 1.173 },
+        { x: hex.x - 0.99, y: hex.y + 0.5865 },
+        { x: hex.x - 0.99, y: hex.y - 0.5865 },
+      ];
+      const hexEdges = [
+        [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0],
+      ];
+      for (const edgeIdx of hex.edges) {
+        const [a, b] = hexEdges[edgeIdx];
+        const e = { x1: verts[a].x, y1: verts[a].y, x2: verts[b].x, y2: verts[b].y };
+        // Normalize key so same edge from different hexes is same
+        const k1 = `${e.x1.toFixed(3)},${e.y1.toFixed(3)}-${e.x2.toFixed(3)},${e.y2.toFixed(3)}`;
+        const k2 = `${e.x2.toFixed(3)},${e.y2.toFixed(3)}-${e.x1.toFixed(3)},${e.y1.toFixed(3)}`;
+        if (!seen.has(k1) && !seen.has(k2)) {
+          seen.add(k1);
+          edges.push(e);
+        }
+      }
+    }
+    return edges;
+  }, [board]);
+
+  // Check if a vertex is valid for settlement placement (distance rule)
+  const isValidSettlement = useCallback(
+    (x: number, y: number) => {
+      for (const key of houses) {
+        const coords = coordsFromVertexKey(key);
+        if (dist(x, y, coords.x, coords.y) < MIN_SETTLEMENT_DIST) {
+          return false;
+        }
+      }
+      return true;
+    },
+    [houses]
+  );
+
+  // Get the settlement placed this turn (if any)
+  const currentTurnSettlement = useMemo(() => {
+    if (!currentPlayer) return null;
+    const placements = playerPlacements[currentPlayer.name];
+    if (!placements || placements.length === 0) return null;
+    const last = placements[placements.length - 1];
+    // Only return if it was placed this turn (road not yet confirmed)
+    if (placementPhase === "road" || placementPhase === "done") {
+      return coordsFromVertexKey(last.house);
+    }
+    return null;
+  }, [currentPlayer, playerPlacements, placementPhase]);
+
+  // Check if an edge is valid for road placement (must connect to current settlement)
+  const isValidRoad = useCallback(
+    (x1: number, y1: number, x2: number, y2: number) => {
+      if (!currentTurnSettlement) return false;
+      const { x, y } = currentTurnSettlement;
+      const d1 = dist(x1, y1, x, y);
+      const d2 = dist(x2, y2, x, y);
+      return d1 < EDGE_VERTEX_TOLERANCE || d2 < EDGE_VERTEX_TOLERANCE;
+    },
+    [currentTurnSettlement]
+  );
+
+  // Set of valid vertex positions for current state
+  const validVertices = useMemo(() => {
+    if (!isSurpriseMode || placementPhase !== "settlement") return new Set<string>();
+    const valid = new Set<string>();
+    for (const v of allVertexPositions) {
+      if (isValidSettlement(v.x, v.y)) {
+        valid.add(`${v.x.toFixed(3)},${v.y.toFixed(3)}`);
+      }
+    }
+    return valid;
+  }, [isSurpriseMode, placementPhase, allVertexPositions, isValidSettlement]);
+
+  // Set of valid edge positions for current state
+  const validEdges = useMemo(() => {
+    if (!isSurpriseMode || placementPhase !== "road") return new Set<string>();
+    const valid = new Set<string>();
+    for (const e of allEdgePositions) {
+      if (isValidRoad(e.x1, e.y1, e.x2, e.y2)) {
+        // Check edge isn't already taken
+        const taken = [...roads].some((r) => {
+          const [coordPart] = r.split("#");
+          const [p1, p2] = coordPart.split("-");
+          const [rx1, ry1] = p1.split(",").map(Number);
+          const [rx2, ry2] = p2.split(",").map(Number);
+          return (
+            (dist(rx1, ry1, e.x1, e.y1) < EDGE_VERTEX_TOLERANCE &&
+              dist(rx2, ry2, e.x2, e.y2) < EDGE_VERTEX_TOLERANCE) ||
+            (dist(rx1, ry1, e.x2, e.y2) < EDGE_VERTEX_TOLERANCE &&
+              dist(rx2, ry2, e.x1, e.y1) < EDGE_VERTEX_TOLERANCE)
+          );
+        });
+        if (!taken) {
+          valid.add(`${e.x1.toFixed(3)},${e.y1.toFixed(3)}-${e.x2.toFixed(3)},${e.y2.toFixed(3)}`);
+        }
+      }
+    }
+    return valid;
+  }, [isSurpriseMode, placementPhase, allEdgePositions, isValidRoad, roads]);
+
+  const handleVertexClick = useCallback(
+    (x: number, y: number) => {
+      if (!isSurpriseMode || placementPhase !== "settlement" || !currentPlayer) return;
+      if (!isValidSettlement(x, y)) return;
+
+      const key = vertexKey(x, y, currentPlayer.color);
+
+      setHouses((prev) => new Set(prev).add(key));
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        if (!updated[currentPlayer.name]) updated[currentPlayer.name] = [];
+        updated[currentPlayer.name] = [
+          ...updated[currentPlayer.name],
+          { house: key, road: "" },
+        ];
+        return updated;
+      });
+      setPlacementPhase("road");
+    },
+    [isSurpriseMode, placementPhase, currentPlayer, isValidSettlement]
+  );
+
+  const handleEdgeClick = useCallback(
+    (x1: number, y1: number, x2: number, y2: number) => {
+      if (!isSurpriseMode || placementPhase !== "road" || !currentPlayer) return;
+      if (!isValidRoad(x1, y1, x2, y2)) return;
+
+      const key = edgeKey(x1, y1, x2, y2, currentPlayer.color);
+
+      setRoads((prev) => new Set(prev).add(key));
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        const placements = updated[currentPlayer.name];
+        if (placements && placements.length > 0) {
+          placements[placements.length - 1].road = key;
+        }
+        return { ...updated };
+      });
+      setPlacementPhase("done");
+    },
+    [isSurpriseMode, placementPhase, currentPlayer, isValidRoad]
+  );
+
+  const handleConfirm = useCallback(() => {
+    setPlayerTurn((prev) => prev + 1);
+    setPlacementPhase("settlement");
+  }, []);
+
+  const handleReveal = useCallback(() => {
+    setReveal(true);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    if (!currentPlayer) return;
+
+    if (placementPhase === "done") {
+      // Undo road
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        const placements = updated[currentPlayer.name];
+        if (placements && placements.length > 0) {
+          const roadKey = placements[placements.length - 1].road;
+          if (roadKey) {
+            setRoads((prevRoads) => {
+              const newRoads = new Set(prevRoads);
+              newRoads.delete(roadKey);
+              return newRoads;
+            });
+          }
+          placements[placements.length - 1].road = "";
+        }
+        return { ...updated };
+      });
+      setPlacementPhase("road");
+    } else if (placementPhase === "road") {
+      // Undo settlement
+      setPlayerPlacements((prev) => {
+        const updated = { ...prev };
+        const placements = updated[currentPlayer.name];
+        if (placements && placements.length > 0) {
+          const houseKey = placements[placements.length - 1].house;
+          if (houseKey) {
+            setHouses((prevHouses) => {
+              const newHouses = new Set(prevHouses);
+              newHouses.delete(houseKey);
+              return newHouses;
+            });
+          }
+          placements.pop();
+        }
+        return { ...updated };
+      });
+      setPlacementPhase("settlement");
+    }
+  }, [currentPlayer, placementPhase]);
+
+  // Check if a vertex position is valid for highlighting
+  const isVertexValid = useCallback(
+    (x: number, y: number) => {
+      return validVertices.has(`${x.toFixed(3)},${y.toFixed(3)}`);
+    },
+    [validVertices]
+  );
+
+  // Check if an edge position is valid for highlighting
+  const isEdgeValid = useCallback(
+    (x1: number, y1: number, x2: number, y2: number) => {
+      const k1 = `${x1.toFixed(3)},${y1.toFixed(3)}-${x2.toFixed(3)},${y2.toFixed(3)}`;
+      const k2 = `${x2.toFixed(3)},${y2.toFixed(3)}-${x1.toFixed(3)},${y1.toFixed(3)}`;
+      return validEdges.has(k1) || validEdges.has(k2);
+    },
+    [validEdges]
+  );
+
+  // Compute resources touching second settlement for each player
+  // Falls back to first settlement if player only has one placement
+  const resourcesPerPlayer: Record<string, Resource[]> = {};
+  for (const playerName of Object.keys(playerPlacements)) {
+    const placements = playerPlacements[playerName];
+    if (placements.length === 0) continue;
+    const house = placements.length >= 2 ? placements[1].house : placements[0].house;
+    if (!house) continue;
+    const { x, y } = coordsFromVertexKey(house);
+    const touching = board.filter(
+      (hex) => dist(hex.x, hex.y, x, y) < MIN_SETTLEMENT_DIST
+    );
+    resourcesPerPlayer[playerName] = touching
+      .map((hex) => hex.resource)
+      .filter((r) => r !== "desert") as Resource[];
+  }
 
   const DrawVertex = ({ x, y }: { x: number; y: number }) => {
     const color = [...houses]
       .find((house) => house.startsWith(`${x},${y}`))
       ?.split("#")[1];
+    const placed = color ? `#${color}` : undefined;
+    const valid = !placed && isVertexValid(x, y);
+
     return (
       <Vertex
         x={x}
         y={y}
         onClick={handleVertexClick}
-        color={color ? `#${color}` : undefined}
+        color={placed}
+        disabled={!isSurpriseMode || placementPhase !== "settlement"}
+        valid={valid}
+        highlightColor={currentPlayer?.color}
       />
     );
   };
@@ -960,6 +481,8 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     const color = [...roads]
       .find((road) => road.startsWith(`${x1},${y1}-${x2},${y2}`))
       ?.split("#")[1];
+    const placed = color ? `#${color}` : undefined;
+    const valid = !placed && isEdgeValid(x1, y1, x2, y2);
 
     return (
       <Edge
@@ -968,7 +491,10 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
         x2={x2}
         y2={y2}
         onClick={handleEdgeClick}
-        color={color ? `#${color}` : undefined}
+        color={placed}
+        disabled={!isSurpriseMode || placementPhase !== "road"}
+        valid={valid}
+        highlightColor={currentPlayer?.color}
       />
     );
   };
@@ -984,117 +510,68 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
 
   const allEdges = (x: number, y: number) => [
     <DrawEdge x1={x} y1={y - 1.173} x2={x + 0.99} y2={y - 0.5865} key={0} />,
-    <DrawEdge
-      x1={x + 0.99}
-      y1={y - 0.5865}
-      x2={x + 0.99}
-      y2={y + 0.5865}
-      key={1}
-    />,
+    <DrawEdge x1={x + 0.99} y1={y - 0.5865} x2={x + 0.99} y2={y + 0.5865} key={1} />,
     <DrawEdge x1={x + 0.99} y1={y + 0.5865} x2={x} y2={y + 1.173} key={2} />,
     <DrawEdge x1={x} y1={y + 1.173} x2={x - 0.99} y2={y + 0.5865} key={3} />,
-    <DrawEdge
-      x1={x - 0.99}
-      y1={y + 0.5865}
-      x2={x - 0.99}
-      y2={y - 0.5865}
-      key={4}
-    />,
+    <DrawEdge x1={x - 0.99} y1={y + 0.5865} x2={x - 0.99} y2={y - 0.5865} key={4} />,
     <DrawEdge x1={x - 0.99} y1={y - 0.5865} x2={x} y2={y - 1.173} key={5} />,
   ];
 
-  const hexesTouchingSecondHouseForEachPlayer: Record<string, Resource[]> = {};
-
-  for (const playerName of Object.keys(playerPlacements)) {
-    const placements = playerPlacements[playerName];
-    if (placements.length < 2) {
-      continue;
-    }
-
-    const secondHouse = placements[1].house;
-    const [x, y] = secondHouse.split("#")[0].split(",").map(Number);
-
-    if (!hexesTouchingSecondHouseForEachPlayer[playerName]) {
-      hexesTouchingSecondHouseForEachPlayer[playerName] = [];
-    }
-
-    // const getAllVerticesOfHex = (x: number, y: number) => [
-    //   { x: x, y: y - 1 },
-    //   { x: x + 0.866, y: y - 0.5 },
-    //   { x: x + 0.866, y: y + 0.5 },
-    //   { x: x, y: y + 1 },
-    //   { x: x - 0.866, y: y + 0.5 },
-    //   { x: x - 0.866, y: y - 0.5 },
-    // ];
-
-    // Find the hexes touching the second house
-    const hexesTouchingSecondHouse = board.filter(
-      (hex) => Math.sqrt((hex.x - x) ** 2 + (hex.y - y) ** 2) < 1.2
-    );
-
-    const resources = hexesTouchingSecondHouse.map((hex) => hex.resource);
-
-    hexesTouchingSecondHouseForEachPlayer[playerName] = resources.filter(
-      (resource) => resource !== "desert"
-    ) as Resource[];
-  }
-
   return (
-    <div className="flex flex-col justify-center items-center bg-blue-100">
-      {invertTiles && (
-        <>
-          <h1 className="text-4xl text-black">Inverted Tiles</h1>
-          <p
-            style={{
-              color:
-                players[
-                  playerTurns[players.length as NumberOfPlayers][playerTurn]
-                ].color,
-            }}
-          >
-            {
-              players[
-                playerTurns[players.length as NumberOfPlayers][playerTurn]
-              ].name
-            }
-            &apos;s turn
-          </p>
-          <button
-            onClick={
-              playerTurns[players.length as NumberOfPlayers].length - 1 ===
-              playerTurn
-                ? handleReveal
-                : handlePlayerTurn
-            }
-            className="bg-red-500 text-white p-2 rounded"
-          >
-            {playerTurns[players.length as NumberOfPlayers].length - 1 ===
-            playerTurn
-              ? "Reveal"
-              : "Confirm Placements"}
-          </button>
-          {reveal &&
-            Object.keys(playerPlacements).map((playerName) => (
-              <p key={playerName} className="text-black">
-                <span
-                  style={{
-                    color: players.filter(
-                      (player) => player.name === playerName
-                    )[0].color,
-                  }}
-                >
-                  {playerName}
-                </span>{" "}
-                gets{" "}
-                {hexesTouchingSecondHouseForEachPlayer[playerName].join(", ")}
-              </p>
-            ))}
-        </>
+    <div className="flex flex-col justify-center items-center w-full h-full">
+      {isSurpriseMode && !reveal && (
+        <PlayerTurnBar
+          currentPlayer={currentPlayer}
+          placementPhase={placementPhase}
+          onConfirm={handleConfirm}
+          onUndo={handleUndo}
+          isLastTurn={isLastTurn}
+          onReveal={handleReveal}
+          turnNumber={playerTurn + 1}
+          totalTurns={turnOrder?.length ?? 0}
+        />
       )}
-      <svg
-        viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
-        preserveAspectRatio="xMidYMid meet"
-      >
+      <div className="relative w-full h-full">
+        {reveal && Object.keys(playerPlacements).length > 0 && (
+          <div className="absolute top-0 left-0 right-0 z-10 mt-1 mx-1 rounded-xl overflow-hidden border border-border bg-bg-surface/80">
+            <button
+              onClick={() => setResourcesExpanded((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-text-primary hover:bg-white/5 transition-colors"
+            >
+              <span>{"\u2728"} Reveal Resources</span>
+              <span className="text-text-secondary text-xs">{resourcesExpanded ? "\u25B2" : "\u25BC"}</span>
+            </button>
+            {resourcesExpanded && (
+              <div className="border-t border-border">
+                {Object.keys(playerPlacements).map((playerName) => {
+                  const resources = resourcesPerPlayer[playerName];
+                  if (!resources) return null;
+                  const playerColor = players.find((p) => p.name === playerName)?.color;
+                  return (
+                    <div key={playerName} className="flex items-center justify-between px-4 py-2.5 border-b border-border last:border-b-0">
+                      <div className="flex items-center gap-2 font-medium" style={{ color: playerColor }}>
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: playerColor }} />
+                        {playerName}
+                      </div>
+                      <div className="flex items-center gap-1 flex-wrap justify-end">
+                        {resources.map((r, i) => (
+                          <span key={i} className="inline-flex items-center gap-0.5 bg-white/5 rounded-md px-1.5 py-0.5 text-xs text-text-primary">
+                            {RESOURCE_ICONS[r] ?? ""} {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        <svg
+          viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
+          preserveAspectRatio="xMidYMid meet"
+          className="w-full h-full max-w-[600px]"
+        >
         {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
           <React.Fragment key={index}>
             <TriangleTile
@@ -1113,20 +590,14 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
               rotation={60}
               resource={board[index].resource as string}
               number={board[index].number}
-              isHovered={hoveredHex === index}
-              onHover={() => setHoveredHex(index)}
-              onHoverEnd={() => setHoveredHex(null)}
               reveal={reveal}
             />
-            {allEdges(hex.x, hex.y).filter((_, index) =>
-              hex.edges.includes(index)
-            )}
-            {allVertices(hex.x, hex.y).filter((_, index) =>
-              hex.vertices.includes(index)
-            )}
+            {allEdges(hex.x, hex.y).filter((_, i) => hex.edges.includes(i))}
+            {allVertices(hex.x, hex.y).filter((_, i) => hex.vertices.includes(i))}
           </React.Fragment>
         ))}
-      </svg>
+        </svg>
+      </div>
     </div>
   );
 };

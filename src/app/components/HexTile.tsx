@@ -1,4 +1,27 @@
+"use client";
+
 import React from "react";
+
+export const resourceColors: Record<string, string> = {
+  wood: "#4A9B5A",
+  brick: "#E85D4A",
+  ore: "#8A9BAE",
+  hay: "#E8C44A",
+  sheep: "#8BBF7A",
+  desert: "#C4956A",
+  inverted: "#1A6B6B",
+  all: "#C4956A",
+};
+
+export const icons: Record<string, string> = {
+  wood: "\u{1FAB5}",
+  brick: "\u{1F9F1}",
+  ore: "\u{1FAA8}",
+  hay: "\u{1F33E}",
+  sheep: "\u{1F40F}",
+  desert: "\u{1F3DC}\uFE0F",
+  all: "\u2753",
+};
 
 interface HexTileProps {
   x: number;
@@ -6,32 +29,11 @@ interface HexTileProps {
   rotation: number;
   resource: string;
   number?: number;
-  isHovered: boolean;
-  onHover: () => void;
-  onHoverEnd: () => void;
   reveal?: boolean;
+  animationDelay?: number;
+  animationPhase?: "idle" | "tiles" | "colors" | "numbers" | "complete";
+  visible?: boolean;
 }
-
-export const resourceColors: { [key: string]: string } = {
-  wood: "#77dd77",
-  brick: "#ff9999",
-  ore: "#ababab",
-  hay: "#fdfd96",
-  sheep: "#c1e1c1",
-  desert: "#F4D3A0",
-  inverted: "#40E0D0",
-  all: "#F4D3A0",
-};
-
-export const icons: { [key: string]: string } = {
-  wood: "🪵",
-  brick: "🧱",
-  ore: "🪨",
-  hay: "🌾",
-  sheep: "🐏",
-  desert: "🏜️🐫",
-  all: "❓"
-};
 
 export const HexTile: React.FC<HexTileProps> = ({
   x,
@@ -39,47 +41,114 @@ export const HexTile: React.FC<HexTileProps> = ({
   rotation,
   resource,
   number,
-  isHovered,
-  onHover,
-  onHoverEnd,
   reveal = true,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  animationDelay = 0,
+  animationPhase = "complete",
+  visible = true,
 }) => {
   const hexPoints = "0,-1 0.866,-0.5 0.866,0.5 0,1 -0.866,0.5 -0.866,-0.5";
+  const showContent = reveal && (animationPhase === "colors" || animationPhase === "numbers" || animationPhase === "complete");
+  const showNumbers = reveal && (animationPhase === "numbers" || animationPhase === "complete");
   const color = !reveal ? resourceColors.inverted : resourceColors[resource];
-  const scale = isHovered ? 1.1 : 1;
-  const strokeWidth = isHovered ? 0.05 : 0.025;
+  const isHighProb = number === 6 || number === 8;
+
+  if (!visible && animationPhase !== "complete") return null;
 
   return (
     <g
-      transform={`translate(${x}, ${y}) scale(${scale})`}
-      onMouseEnter={onHover}
-      onMouseLeave={onHoverEnd}
+      transform={`translate(${x}, ${y})`}
+      className="hex-tile"
     >
+      {/* Hex shape */}
       <polygon
         points={hexPoints}
         transform={`rotate(${rotation})`}
-        fill={color}
-        stroke="black"
-        strokeWidth={strokeWidth}
+        fill={showContent ? color : resourceColors.inverted}
+        stroke="#2A2520"
+        strokeWidth={0.03}
+        style={{
+          transition: "fill 0.3s ease",
+        }}
       />
-      {number && (
+
+      {/* Inner shadow for depth */}
+      <polygon
+        points={hexPoints}
+        transform={`rotate(${rotation})`}
+        fill="none"
+        stroke="rgba(0,0,0,0.3)"
+        strokeWidth={0.06}
+        style={{ pointerEvents: "none" }}
+      />
+
+      {/* Resource icon */}
+      {showContent && resource !== "desert" && (
         <text
           x="0"
-          y="0.5"
+          y="-0.15"
           textAnchor="middle"
-          fontSize="0.3"
-          fill="black"
-          fontWeight="bold"
+          fontSize="0.35"
+          style={{
+            transition: "opacity 0.3s ease",
+            pointerEvents: "none",
+          }}
         >
-          {!reveal ? "" : number}
+          {icons[resource]}
         </text>
       )}
-      <text x="0" y="-0.3" textAnchor="middle" fontSize="0.25" fill="black">
-        {!reveal ? "" : resource}
-      </text>
-      <text x="0" y="0.1" textAnchor="middle" fontSize="0.3" fill="black">
-        {!reveal ? "" : icons[resource]}
-      </text>
+
+      {/* Desert icon */}
+      {showContent && resource === "desert" && (
+        <text x="0" y="0.1" textAnchor="middle" fontSize="0.4" style={{ pointerEvents: "none" }}>
+          {"\u{1F3DC}\uFE0F"}
+        </text>
+      )}
+
+      {/* Number token */}
+      {showNumbers && number && (
+        <g style={{ pointerEvents: "none" }}>
+          <circle
+            cx="0"
+            cy="0.35"
+            r="0.28"
+            fill="#1A1714"
+            stroke={isHighProb ? "#E85D4A" : "#2A2520"}
+            strokeWidth={0.03}
+          />
+          <text
+            x="0"
+            y="0.43"
+            textAnchor="middle"
+            fontSize="0.25"
+            fontWeight="bold"
+            fill={isHighProb ? "#E85D4A" : "#F0E6D6"}
+            fontFamily="var(--font-geist-sans), system-ui"
+          >
+            {number}
+          </text>
+        </g>
+      )}
+
+      {/* Hidden state question mark */}
+      {!reveal && (
+        <text
+          x="0"
+          y="0.15"
+          textAnchor="middle"
+          fontSize="0.4"
+          fill="#1A6B6B"
+          opacity="0.6"
+          style={{ pointerEvents: "none" }}
+        >
+          ?
+        </text>
+      )}
+
+      {/* Accessibility */}
+      <title>
+        {reveal ? `${resource} tile${number ? `, number ${number}` : ""}` : "Hidden tile"}
+      </title>
     </g>
   );
 };
