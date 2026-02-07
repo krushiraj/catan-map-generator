@@ -28,14 +28,16 @@ interface SidePanelProps {
 
 export const SidePanel: React.FC<SidePanelProps> = (props) => {
   return (
-    <div className="h-full overflow-y-auto bg-bg-surface border-l border-border p-5 space-y-6">
+    <div className="h-full overflow-y-auto scrollbar-thin bg-bg-surface border-l border-border px-5 py-4">
       <div className="flex items-center justify-between gap-3">
         <PlayerCountPills value={props.numPlayers} onChange={props.onNumPlayersChange} />
       </div>
 
-      <GenerateButton onClick={props.onGenerate} isAnimating={props.isAnimating} />
+      <div className="mt-3">
+        <GenerateButton onClick={props.onGenerate} isAnimating={props.isAnimating} />
+      </div>
 
-      <div className="h-px bg-border" />
+      <div className="h-px bg-border my-4" />
 
       <ConstraintToggles
         noSameResources={props.noSameResources}
@@ -44,17 +46,17 @@ export const SidePanel: React.FC<SidePanelProps> = (props) => {
         onToggleNumbers={props.onToggleNumbers}
       />
 
-      <div className="h-px bg-border" />
+      <div className="h-px bg-border my-4" />
 
       <ScarceResourcePicker value={props.scarceResource} onChange={props.onScarceChange} />
 
-      <div className="h-px bg-border" />
+      <div className="h-px bg-border my-4" />
 
       <SurpriseToggle enabled={props.surpriseMode} onToggle={props.onSurpriseToggle} />
 
       {props.surpriseMode && (
         <>
-          <div className="h-px bg-border" />
+          <div className="h-px bg-border my-4" />
           <PlayerSetup
             players={props.players}
             setPlayers={props.setPlayers}

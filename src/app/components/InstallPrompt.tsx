@@ -57,7 +57,7 @@ export const InstallPrompt = () => {
   if (dismissed || (!deferredPrompt && !isIOS)) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-up w-[calc(100%-2rem)] max-w-sm">
+    <div className="fixed bottom-6 left-4 right-4 z-50 animate-fade-up max-w-sm mx-auto">
       <div className="bg-bg-surface-raised border border-border rounded-2xl px-4 py-3 shadow-xl">
         <div className="flex items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}

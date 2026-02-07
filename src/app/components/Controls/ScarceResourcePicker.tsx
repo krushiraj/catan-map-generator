@@ -23,13 +23,13 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
 
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">
+      <h3 className="text-[11px] font-semibold uppercase tracking-widest text-text-secondary/70 mb-2">
         Scarce Resource
       </h3>
-      <div className="flex gap-2 flex-wrap">
+      <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => { setIsRandom(false); onChange(""); }}
-          className={`btn-press px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+          className={`btn-press flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
             value === "" && !isRandom
               ? "gold-gradient text-bg-base"
               : "bg-bg-surface-raised text-text-secondary border border-border"
@@ -41,14 +41,15 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
           <button
             key={res.key}
             onClick={() => { setIsRandom(false); onChange(res.key); }}
-            className={`btn-press w-9 h-9 rounded-full text-lg transition-all flex items-center justify-center ${
+            className={`btn-press flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
               value === res.key && !isRandom
-                ? "ring-2 ring-accent-gold ring-offset-2 ring-offset-bg-base"
-                : "opacity-60 hover:opacity-100"
-            } ${res.color}`}
+                ? `ring-2 ring-accent-gold ring-offset-2 ring-offset-bg-base ${res.color}`
+                : "bg-bg-surface-raised text-text-secondary border border-border hover:border-border/80"
+            }`}
             title={res.label}
           >
-            {res.icon}
+            <span className="text-base">{res.icon}</span>
+            {res.label}
           </button>
         ))}
         <button
@@ -57,7 +58,7 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
             const resources = ["brick", "hay", "ore", "wood", "sheep"];
             onChange(resources[Math.floor(Math.random() * resources.length)]);
           }}
-          className={`btn-press px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+          className={`btn-press flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
             isRandom
               ? "gold-gradient text-bg-base"
               : "bg-bg-surface-raised text-text-secondary border border-border"

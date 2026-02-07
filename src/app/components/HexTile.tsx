@@ -58,7 +58,6 @@ export const HexTile: React.FC<HexTileProps> = ({
   return (
     <g
       transform={`translate(${x}, ${y})`}
-      className="hex-tile"
     >
       {/* Hex shape */}
       <polygon

@@ -23,6 +23,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="CatanMapGen" />
         <meta name="theme-color" content="#0D0D0F" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-bg-base text-text-primary`}

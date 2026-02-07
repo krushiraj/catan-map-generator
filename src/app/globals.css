@@ -68,18 +68,23 @@
   }
 }
 
-/* Hex tile hover (CSS-only to avoid re-renders) */
-.hex-tile {
-  transition: transform 0.2s ease;
+
+/* Thin scrollbars */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
-@media (hover: hover) {
-  .hex-tile:hover {
-    transform: scale(1.03);
-    filter: brightness(1.1);
-  }
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
-/* Vaul drawer overrides */
-[vaul-drawer] {
-  background: var(--bg-surface) !important;
-}

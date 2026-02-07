@@ -16,16 +16,10 @@ interface PlayerTurnBarProps {
   totalTurns: number;
 }
 
-const PHASE_ICONS: Record<PlacementPhase, string> = {
-  settlement: "\u{1F3E0}",
-  road: "\u{1F6E4}\uFE0F",
-  done: "\u2705",
-};
-
 const PHASE_LABELS: Record<PlacementPhase, string> = {
-  settlement: "Tap a vertex to place settlement",
-  road: "Tap an edge to place road",
-  done: "Ready to confirm",
+  settlement: "Place settlement on a vertex",
+  road: "Place road on an edge",
+  done: "Placement complete",
 };
 
 export const PlayerTurnBar: React.FC<PlayerTurnBarProps> = ({
@@ -40,27 +34,33 @@ export const PlayerTurnBar: React.FC<PlayerTurnBarProps> = ({
 }) => {
   const isConfirmPhase = placementPhase === "done";
   const canUndo = placementPhase === "road" || placementPhase === "done";
+  const stepIndex = placementPhase === "settlement" ? 0 : 1;
 
   return (
-    <div className="w-full flex flex-col">
-      {/* Top row: Player info */}
-      <div
-        className="flex items-center justify-between px-4 py-2 transition-colors"
-        style={{ backgroundColor: `${currentPlayer.color}15` }}
-      >
+    <div
+      className="w-full flex flex-col overflow-hidden"
+      style={{
+        background: `linear-gradient(135deg, ${currentPlayer.color}30 0%, ${currentPlayer.color}10 100%)`,
+        borderTop: `2px solid ${currentPlayer.color}90`,
+      }}
+    >
+
+      {/* Player info row */}
+      <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
+          {/* Player color badge */}
           <div
-            className="w-4 h-4 rounded-full"
+            className="w-5 h-5 rounded-full shrink-0"
             style={{
               backgroundColor: currentPlayer.color,
-              boxShadow: `0 0 0 2px var(--bg-base), 0 0 0 3.5px ${currentPlayer.color}`,
+              boxShadow: `0 0 8px ${currentPlayer.color}60`,
             }}
           />
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-text-primary leading-tight">
+            <span className="text-base font-bold text-white leading-tight">
               {currentPlayer.name}
             </span>
-            <span className="text-[10px] text-text-secondary leading-tight">
+            <span className="text-xs text-neutral-400 leading-tight">
               Turn {turnNumber} of {totalTurns}
             </span>
           </div>
@@ -69,58 +69,55 @@ export const PlayerTurnBar: React.FC<PlayerTurnBarProps> = ({
         {canUndo && (
           <button
             onClick={onUndo}
-            className="btn-press text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors
-              bg-bg-surface-raised border border-border text-text-secondary hover:text-text-primary hover:border-text-secondary"
+            className="btn-press flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg transition-colors
+              bg-white/10 border border-white/15 text-neutral-300 hover:text-white hover:bg-white/15"
           >
-            \u21A9 Undo
+            {"\u21A9"} Undo
           </button>
         )}
       </div>
 
-      {/* Bottom row: Phase indicator / Confirm button */}
-      <div
-        className="flex items-center px-4 py-1.5 border-b border-border"
-        style={{ backgroundColor: `${currentPlayer.color}08` }}
-      >
+      {/* Phase / action row — fixed height to prevent layout jump */}
+      <div className="px-4 pb-4 h-[52px] flex items-center">
         {isConfirmPhase ? (
-          // Full-width confirm button
           <button
             onClick={isLastTurn ? onReveal : onConfirm}
-            className="btn-press w-full py-2.5 rounded-xl font-bold text-sm tracking-wide transition-all
-              gold-gradient text-bg-base animate-pulse-glow"
+            className="btn-press w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all
+              gold-gradient text-bg-base shadow-lg"
+            style={{
+              boxShadow: "0 4px 20px rgba(212,165,70,0.3), 0 0 0 1px rgba(212,165,70,0.3)",
+            }}
           >
-            {isLastTurn ? "\u2728 Reveal All Resources" : `Confirm & Next Player \u2192`}
+            {isLastTurn
+              ? `${"\u2728"} Reveal All Resources`
+              : `Confirm & Next Player ${"\u2192"}`}
           </button>
         ) : (
-          // Phase instruction
-          <div className="flex items-center gap-2 py-1">
-            <span className="text-sm">{PHASE_ICONS[placementPhase]}</span>
-            <span className="text-xs text-text-secondary">
+          <div className="flex items-center gap-3">
+            {/* Step progress */}
+            <div className="flex items-center gap-1.5">
+              {[0, 1].map((i) => (
+                <div
+                  key={i}
+                  className="h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: i === stepIndex ? 24 : 10,
+                    backgroundColor:
+                      i === stepIndex
+                        ? currentPlayer.color
+                        : "rgba(255,255,255,0.15)",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Phase icon + label */}
+            <span className="text-base">
+              {placementPhase === "settlement" ? `${"\u{1F3E0}"}` : `${"\u{1F6E4}\uFE0F"}`}
+            </span>
+            <span className="text-sm text-neutral-300">
               {PHASE_LABELS[placementPhase]}
             </span>
-            {/* Step dots */}
-            <div className="flex items-center gap-1 ml-auto">
-              <div
-                className="w-1.5 h-1.5 rounded-full transition-colors"
-                style={{
-                  backgroundColor:
-                    placementPhase === "settlement"
-                      ? currentPlayer.color
-                      : "var(--text-secondary)",
-                  opacity: placementPhase === "settlement" ? 1 : 0.3,
-                }}
-              />
-              <div
-                className="w-1.5 h-1.5 rounded-full transition-colors"
-                style={{
-                  backgroundColor:
-                    placementPhase === "road"
-                      ? currentPlayer.color
-                      : "var(--text-secondary)",
-                  opacity: placementPhase === "road" ? 1 : 0.3,
-                }}
-              />
-            </div>
           </div>
         )}
       </div>

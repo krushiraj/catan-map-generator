@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { Drawer } from "vaul";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import type { NumberOfPlayers, Player } from "../../utils/board";
 import { GenerateButton } from "./GenerateButton";
 import { PlayerCountPills } from "./PlayerCountPills";
@@ -28,6 +27,8 @@ interface BottomSheetProps {
   locked?: boolean;
 }
 
+const COLLAPSED_HEIGHT = 148;
+
 export const BottomSheet: React.FC<BottomSheetProps> = ({
   numPlayers,
   onNumPlayersChange,
@@ -44,59 +45,142 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   players,
   setPlayers,
 }) => {
+  const [sheetHeight, setSheetHeight] = useState(COLLAPSED_HEIGHT);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartY = useRef(0);
+  const dragStartHeight = useRef(0);
+
+  const getSnapPoints = useCallback(() => {
+    const vh = window.innerHeight;
+    return [COLLAPSED_HEIGHT, vh * 0.5, vh * 0.92];
+  }, []);
+
+  const snapToNearest = useCallback((height: number) => {
+    const snaps = getSnapPoints();
+    let closest = snaps[0];
+    let minDist = Math.abs(height - snaps[0]);
+    for (const snap of snaps) {
+      const dist = Math.abs(height - snap);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = snap;
+      }
+    }
+    setSheetHeight(closest);
+  }, [getSnapPoints]);
+
+  // Handle drag on the drag handle only — touch
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setIsDragging(true);
+    dragStartY.current = e.touches[0].clientY;
+    dragStartHeight.current = sheetHeight;
+  }, [sheetHeight]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const deltaY = dragStartY.current - e.touches[0].clientY;
+    const maxH = window.innerHeight * 0.92;
+    const newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxH, dragStartHeight.current + deltaY));
+    setSheetHeight(newHeight);
+  }, [isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    snapToNearest(sheetHeight);
+  }, [isDragging, sheetHeight, snapToNearest]);
+
+  // Mouse support for desktop testing
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaY = dragStartY.current - e.clientY;
+      const maxH = window.innerHeight * 0.92;
+      const newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxH, dragStartHeight.current + deltaY));
+      setSheetHeight(newHeight);
+    };
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      snapToNearest(sheetHeight);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, sheetHeight, snapToNearest]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    dragStartY.current = e.clientY;
+    dragStartHeight.current = sheetHeight;
+  }, [sheetHeight]);
+
   return (
-    <Drawer.Root
-      snapPoints={["148px", 0.45, 0.85]}
-      modal={false}
+    <div
+      className="fixed bottom-0 left-0 right-0 z-40 flex flex-col rounded-t-2xl bg-bg-surface border-t border-border"
+      style={{
+        height: sheetHeight,
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        transition: isDragging ? "none" : "height 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+      }}
     >
-      <Drawer.Portal>
-        <Drawer.Content
-          className="fixed bottom-0 left-0 right-0 z-40 flex flex-col rounded-t-2xl bg-bg-surface border-t border-border"
-          style={{ maxHeight: "85vh" }}
-        >
-          {/* Drag Handle */}
-          <Drawer.Handle className="mx-auto mt-3 mb-2 w-9 h-1 rounded-full bg-text-secondary/40" />
+      {/* Drag Handle — only this area captures drag gestures */}
+      <div
+        className="flex flex-col items-center pt-3 pb-1 cursor-grab active:cursor-grabbing shrink-0"
+        style={{ touchAction: "none" }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+      >
+        <div className="w-9 h-1 rounded-full bg-text-secondary/40" />
+        <span className="text-xs font-semibold uppercase tracking-widest text-text-secondary mt-2">
+          Settings
+        </span>
+      </div>
 
-          {/* Collapsed content - always visible */}
-          <div className="px-4 pb-3 flex items-center justify-between gap-3">
-            <PlayerCountPills value={numPlayers} onChange={onNumPlayersChange} />
-            <GenerateButton onClick={onGenerate} isAnimating={isAnimating} />
-          </div>
+      {/* Collapsed content - always visible */}
+      <div className="px-4 pb-3 flex items-center justify-between gap-3 shrink-0">
+        <PlayerCountPills value={numPlayers} onChange={onNumPlayersChange} />
+        <GenerateButton onClick={onGenerate} isAnimating={isAnimating} />
+      </div>
 
-          {/* Scrollable expanded content */}
-          <div className="overflow-y-auto px-4 pb-8 space-y-6">
-            <div className="h-px bg-border" />
+      {/* Scrollable expanded content */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-thin pl-4 pr-6 pb-8">
+        <div className="h-px bg-border mb-4" />
 
-            <ConstraintToggles
-              noSameResources={noSameResources}
-              noSameNumbers={noSameNumbers}
-              onToggleResources={onToggleResources}
-              onToggleNumbers={onToggleNumbers}
+        <ConstraintToggles
+          noSameResources={noSameResources}
+          noSameNumbers={noSameNumbers}
+          onToggleResources={onToggleResources}
+          onToggleNumbers={onToggleNumbers}
+        />
+
+        <div className="h-px bg-border my-4" />
+
+        <ScarceResourcePicker value={scarceResource} onChange={onScarceChange} />
+
+        <div className="h-px bg-border my-4" />
+
+        <SurpriseToggle
+          enabled={surpriseMode}
+          onToggle={onSurpriseToggle}
+        />
+
+        {surpriseMode && (
+          <>
+            <div className="h-px bg-border my-4" />
+            <PlayerSetup
+              players={players}
+              setPlayers={setPlayers}
+              numberOfPlayers={numPlayers}
             />
-
-            <div className="h-px bg-border" />
-
-            <ScarceResourcePicker value={scarceResource} onChange={onScarceChange} />
-
-            <div className="h-px bg-border" />
-
-            <SurpriseToggle
-              enabled={surpriseMode}
-              onToggle={onSurpriseToggle}
-            />
-
-            <div className="h-px bg-border" />
-
-            {surpriseMode && (
-              <PlayerSetup
-                players={players}
-                setPlayers={setPlayers}
-                numberOfPlayers={numPlayers}
-              />
-            )}
-          </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+          </>
+        )}
+      </div>
+    </div>
   );
 };
