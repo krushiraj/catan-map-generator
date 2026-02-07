@@ -69,7 +69,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     setSheetHeight(closest);
   }, [getSnapPoints]);
 
-  // Handle drag on the drag handle only — touch
+  // Touch handlers on the entire sheet — every swipe drags the sheet
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setIsDragging(true);
     dragStartY.current = e.touches[0].clientY;
@@ -120,22 +120,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 flex flex-col rounded-t-2xl bg-bg-surface border-t border-border"
+      className="fixed bottom-0 left-0 right-0 z-40 flex flex-col rounded-t-2xl bg-bg-surface border-t border-border cursor-grab active:cursor-grabbing"
       style={{
         height: sheetHeight,
+        touchAction: "none",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
         transition: isDragging ? "none" : "height 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
     >
-      {/* Drag Handle — only this area captures drag gestures */}
-      <div
-        className="flex flex-col items-center pt-3 pb-1 cursor-grab active:cursor-grabbing shrink-0"
-        style={{ touchAction: "none" }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-      >
+      {/* Drag Handle */}
+      <div className="flex flex-col items-center pt-3 pb-1 shrink-0">
         <div className="w-9 h-1 rounded-full bg-text-secondary/40" />
         <span className="text-xs font-semibold uppercase tracking-widest text-text-secondary mt-2">
           Settings
@@ -148,8 +146,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         <GenerateButton onClick={onGenerate} isAnimating={isAnimating} />
       </div>
 
-      {/* Scrollable expanded content */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-thin pl-4 pr-6 pb-8">
+      {/* Expanded content */}
+      <div className="flex-1 min-h-0 overflow-hidden overscroll-contain scrollbar-thin pl-4 pr-6 pb-8">
         <div className="h-px bg-border mb-4" />
 
         <ConstraintToggles
