@@ -6,6 +6,7 @@ import { Header } from "./components/Layout/Header";
 import { BottomSheet } from "./components/Controls/BottomSheet";
 import { SidePanel } from "./components/Layout/SidePanel";
 import { Toast } from "./components/Share/Toast";
+import { InstallPrompt } from "./components/InstallPrompt";
 import { useMediaLayout } from "./hooks/useMediaLayout";
 import { encodeMap, decodeMap, type MapData } from "./utils/mapEncoding";
 import type { NumberOfPlayers, Resource, Player } from "./utils/board";
@@ -34,7 +35,7 @@ const HomePage = () => {
     setInitialMapData(null); // Clear shared map data so new board is random
     setResetMap((prev) => !prev);
     setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 1200);
+    setTimeout(() => setIsAnimating(false), 500);
   }, []);
 
   const handleShare = useCallback(async () => {
@@ -168,6 +169,7 @@ const HomePage = () => {
       {layout === "mobile" && <BottomSheet {...controlProps} />}
 
       <Toast message={toast || ""} visible={!!toast} onHide={() => setToast(null)} />
+      <InstallPrompt />
     </div>
   );
 };
