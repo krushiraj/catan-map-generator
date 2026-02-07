@@ -50,6 +50,19 @@ const CHAR_TO_SCARCE: Record<string, string> = {
   n: "",
 };
 
+// URL-safe base64: replace + → -, / → _, strip trailing =
+function toUrlSafeBase64(str: string): string {
+  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromUrlSafeBase64(str: string): string {
+  // Restore standard base64: - → +, _ → /, add padding
+  // Also fix old URLs where URLSearchParams decoded + as space
+  let b64 = str.replace(/-/g, "+").replace(/_/g, "/").replace(/ /g, "+");
+  while (b64.length % 4) b64 += "=";
+  return atob(b64);
+}
+
 export function encodeMap(
   board: { resource?: Resource; number?: number }[],
   settings: MapSettings,
@@ -86,12 +99,12 @@ export function encodeMap(
     raw = `${settingsStr}|${hexStr}`;
   }
 
-  return btoa(raw);
+  return toUrlSafeBase64(raw);
 }
 
 export function decodeMap(encoded: string): MapData | null {
   try {
-    const raw = atob(encoded);
+    const raw = fromUrlSafeBase64(encoded);
 
     const segments = raw.split("|");
     if (segments.length < 2 || segments.length > 3) {

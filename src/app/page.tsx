@@ -31,6 +31,7 @@ const HomePage = () => {
   const roadsRef = useRef<Set<string>>(new Set());
 
   const handleGenerate = useCallback(() => {
+    setInitialMapData(null); // Clear shared map data so new board is random
     setResetMap((prev) => !prev);
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 1200);

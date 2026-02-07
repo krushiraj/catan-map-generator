@@ -116,8 +116,6 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   const panStartScreenRef = useRef({ x: 0, y: 0 });
   const panStartCenterRef = useRef({ x: 0, y: 0 });
   const touchStateRef = useRef({ distance: 0, midX: 0, midY: 0 });
-  const sharedDataConsumedRef = useRef(false);
-
   // Stale-closure-safe refs synced from state
   const viewStateRef = useRef(viewState);
   viewStateRef.current = viewState;
@@ -155,8 +153,8 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       scarceResource
     );
 
-    // If we have shared data that hasn't been consumed yet, override with it
-    if (initialBoardData && !sharedDataConsumedRef.current) {
+    // If shared data is provided, override the random board with it
+    if (initialBoardData) {
       for (let i = 0; i < newBoard.length && i < initialBoardData.length; i++) {
         newBoard[i].resource = initialBoardData[i].resource;
         newBoard[i].number = initialBoardData[i].number;
@@ -165,7 +163,6 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       setHouses(new Set(initialHouses ?? []));
       setRoads(new Set(initialRoads ?? []));
       setReveal(true);
-      sharedDataConsumedRef.current = true;
     } else {
       setBoard(newBoard);
       setHouses(new Set());
@@ -431,7 +428,10 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
         x: viewStateRef.current.centerX,
         y: viewStateRef.current.centerY,
       };
-      (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+      // Don't capture pointer here — capturing immediately redirects pointerup
+      // to the SVG, which prevents click events from reaching child elements
+      // (vertices/edges). Capture is deferred to handlePointerMove once the
+      // drag threshold is exceeded.
     },
     []
   );
@@ -453,6 +453,12 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
       if (!wasDraggedRef.current) {
         wasDraggedRef.current = true;
         setIsDragging(true);
+        // Capture pointer now that we know it's a real drag, so panning
+        // continues smoothly even if the cursor leaves the SVG bounds.
+        const svg = svgRef.current;
+        if (svg) {
+          try { svg.setPointerCapture(e.pointerId); } catch { /* already released */ }
+        }
       }
 
       const svg = svgRef.current;
@@ -482,7 +488,9 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     (e: React.PointerEvent<SVGSVGElement>) => {
       isPanningRef.current = false;
       setIsDragging(false);
-      (e.currentTarget as SVGSVGElement).releasePointerCapture(e.pointerId);
+      try {
+        (e.currentTarget as SVGSVGElement).releasePointerCapture(e.pointerId);
+      } catch { /* pointer was never captured (simple click, not a drag) */ }
     },
     []
   );
