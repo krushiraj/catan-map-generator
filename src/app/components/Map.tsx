@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { HexTile } from "./HexTile";
 import { Vertex } from "./Vertex";
 import { Edge } from "./Edge";
@@ -17,6 +17,14 @@ import {
 import { PlayerTurnBar, type PlacementPhase } from "./Players/PlayerTurnBar";
 
 export type { Resource, NumberOfPlayers, HexPosition, Player };
+
+const RESOURCE_ICONS: Record<string, string> = {
+  wood: "\u{1FAB5}",
+  brick: "\u{1F9F1}",
+  ore: "\u{1FAA8}",
+  hay: "\u{1F33E}",
+  sheep: "\u{1F40F}",
+};
 
 // Coordinate key helpers - we use # as delimiter since hex colors contain #
 const vertexKey = (x: number, y: number, color: string) => `${x},${y}${color}`;
@@ -72,6 +80,7 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   const [playerTurn, setPlayerTurn] = useState(0);
   const [reveal, setReveal] = useState(true);
   const [placementPhase, setPlacementPhase] = useState<PlacementPhase>("settlement");
+  const [resourcesExpanded, setResourcesExpanded] = useState(true);
 
   const turnOrder = playerTurns[players.length as NumberOfPlayers];
   const currentPlayerIndex = turnOrder?.[playerTurn] ?? 0;
@@ -103,6 +112,76 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
     reset,
     invertTiles,
   ]);
+
+  // Track previous player colors to detect changes and sync placements
+  const prevPlayersRef = useRef<Player[]>(players);
+  useEffect(() => {
+    const prev = prevPlayersRef.current;
+    prevPlayersRef.current = players;
+
+    // Build map of color changes
+    const colorMap = new Map<string, string>();
+    for (let i = 0; i < Math.min(prev.length, players.length); i++) {
+      if (prev[i].color !== players[i].color) {
+        colorMap.set(prev[i].color, players[i].color);
+      }
+    }
+    if (colorMap.size === 0) return;
+
+    // Use a temp prefix to avoid collisions during swaps
+    const tempPrefix = "__temp__";
+    const replaceColorInKey = (key: string, oldColor: string, newColor: string) =>
+      key.replace(oldColor, newColor);
+
+    const rebuildSet = (set: Set<string>) => {
+      const arr = [...set];
+      // Pass 1: old -> temp
+      const intermediate = arr.map((key) => {
+        for (const [oldC] of colorMap) {
+          if (key.includes(oldC)) {
+            return replaceColorInKey(key, oldC, tempPrefix + oldC);
+          }
+        }
+        return key;
+      });
+      // Pass 2: temp -> new
+      const final = intermediate.map((key) => {
+        for (const [oldC, newC] of colorMap) {
+          const temp = tempPrefix + oldC;
+          if (key.includes(temp)) {
+            return replaceColorInKey(key, temp, newC);
+          }
+        }
+        return key;
+      });
+      return new Set(final);
+    };
+
+    setHouses((prev) => rebuildSet(prev));
+    setRoads((prev) => rebuildSet(prev));
+    setPlayerPlacements((prev) => {
+      const updated: PlayerPlacements = {};
+      for (const [name, placements] of Object.entries(prev)) {
+        updated[name] = placements.map((p) => {
+          let house = p.house;
+          let road = p.road;
+          // Pass 1: old -> temp
+          for (const [oldC] of colorMap) {
+            if (house.includes(oldC)) house = replaceColorInKey(house, oldC, tempPrefix + oldC);
+            if (road.includes(oldC)) road = replaceColorInKey(road, oldC, tempPrefix + oldC);
+          }
+          // Pass 2: temp -> new
+          for (const [oldC, newC] of colorMap) {
+            const temp = tempPrefix + oldC;
+            if (house.includes(temp)) house = replaceColorInKey(house, temp, newC);
+            if (road.includes(temp)) road = replaceColorInKey(road, temp, newC);
+          }
+          return { house, road };
+        });
+      }
+      return updated;
+    });
+  }, [players]);
 
   // Collect all vertex positions from the board for validation
   const allVertexPositions = useMemo(() => {
@@ -352,16 +431,18 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
   );
 
   // Compute resources touching second settlement for each player
-  const hexesTouchingSecondHouseForEachPlayer: Record<string, Resource[]> = {};
+  // Falls back to first settlement if player only has one placement
+  const resourcesPerPlayer: Record<string, Resource[]> = {};
   for (const playerName of Object.keys(playerPlacements)) {
     const placements = playerPlacements[playerName];
-    if (placements.length < 2) continue;
-    const secondHouse = placements[1].house;
-    const { x, y } = coordsFromVertexKey(secondHouse);
+    if (placements.length === 0) continue;
+    const house = placements.length >= 2 ? placements[1].house : placements[0].house;
+    if (!house) continue;
+    const { x, y } = coordsFromVertexKey(house);
     const touching = board.filter(
       (hex) => dist(hex.x, hex.y, x, y) < MIN_SETTLEMENT_DIST
     );
-    hexesTouchingSecondHouseForEachPlayer[playerName] = touching
+    resourcesPerPlayer[playerName] = touching
       .map((hex) => hex.resource)
       .filter((r) => r !== "desert") as Resource[];
   }
@@ -438,39 +519,59 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-full">
-      {isSurpriseMode && (
-        <>
-          <PlayerTurnBar
-            currentPlayer={currentPlayer}
-            placementPhase={placementPhase}
-            onConfirm={handleConfirm}
-            onUndo={handleUndo}
-            isLastTurn={isLastTurn}
-            onReveal={handleReveal}
-            turnNumber={playerTurn + 1}
-            totalTurns={turnOrder?.length ?? 0}
-          />
-          {reveal &&
-            Object.keys(playerPlacements).map((playerName) => (
-              <p key={playerName} className="text-sm text-text-primary py-1">
-                <span
-                  style={{
-                    color: players.find((p) => p.name === playerName)?.color,
-                  }}
-                >
-                  {playerName}
-                </span>{" "}
-                gets{" "}
-                {hexesTouchingSecondHouseForEachPlayer[playerName]?.join(", ")}
-              </p>
-            ))}
-        </>
+      {isSurpriseMode && !reveal && (
+        <PlayerTurnBar
+          currentPlayer={currentPlayer}
+          placementPhase={placementPhase}
+          onConfirm={handleConfirm}
+          onUndo={handleUndo}
+          isLastTurn={isLastTurn}
+          onReveal={handleReveal}
+          turnNumber={playerTurn + 1}
+          totalTurns={turnOrder?.length ?? 0}
+        />
       )}
-      <svg
-        viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
-        preserveAspectRatio="xMidYMid meet"
-        className="w-full h-full max-w-[600px]"
-      >
+      <div className="relative w-full h-full">
+        {reveal && Object.keys(playerPlacements).length > 0 && (
+          <div className="absolute top-0 left-0 right-0 z-10 mt-1 mx-1 rounded-xl overflow-hidden border border-border bg-bg-surface/80">
+            <button
+              onClick={() => setResourcesExpanded((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-text-primary hover:bg-white/5 transition-colors"
+            >
+              <span>{"\u2728"} Reveal Resources</span>
+              <span className="text-text-secondary text-xs">{resourcesExpanded ? "\u25B2" : "\u25BC"}</span>
+            </button>
+            {resourcesExpanded && (
+              <div className="border-t border-border">
+                {Object.keys(playerPlacements).map((playerName) => {
+                  const resources = resourcesPerPlayer[playerName];
+                  if (!resources) return null;
+                  const playerColor = players.find((p) => p.name === playerName)?.color;
+                  return (
+                    <div key={playerName} className="flex items-center justify-between px-4 py-2.5 border-b border-border last:border-b-0">
+                      <div className="flex items-center gap-2 font-medium" style={{ color: playerColor }}>
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: playerColor }} />
+                        {playerName}
+                      </div>
+                      <div className="flex items-center gap-1 flex-wrap justify-end">
+                        {resources.map((r, i) => (
+                          <span key={i} className="inline-flex items-center gap-0.5 bg-white/5 rounded-md px-1.5 py-0.5 text-xs text-text-primary">
+                            {RESOURCE_ICONS[r] ?? ""} {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        <svg
+          viewBox={numberOfPlayer === 4 ? "-6.5 -6.5 12 12" : "-8 -8 16 16"}
+          preserveAspectRatio="xMidYMid meet"
+          className="w-full h-full max-w-[600px]"
+        >
         {portPositions[numberOfPlayer === 4 ? 4 : 6].map((port, index) => (
           <React.Fragment key={index}>
             <TriangleTile
@@ -495,7 +596,8 @@ export const CatanBoard: React.FC<CatanBoardProps> = ({
             {allVertices(hex.x, hex.y).filter((_, i) => hex.vertices.includes(i))}
           </React.Fragment>
         ))}
-      </svg>
+        </svg>
+      </div>
     </div>
   );
 };
