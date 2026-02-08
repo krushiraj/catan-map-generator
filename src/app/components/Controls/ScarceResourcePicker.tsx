@@ -64,6 +64,7 @@ export const ScarceResourcePicker: React.FC<ScarceResourcePickerProps> = ({
               : "bg-bg-surface-raised text-text-secondary border border-border"
           }`}
         >
+          <span className="text-base">{"\u{1F3B2}"}</span>
           Random
         </button>
       </div>
