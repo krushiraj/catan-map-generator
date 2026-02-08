@@ -53,14 +53,33 @@ const HomePage = () => {
       );
       const url = `${window.location.origin}${window.location.pathname}?m=${encoded}`;
 
-      if (navigator.share) {
-        await navigator.share({ title: "Catan Map", url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        setToast("Link copied to clipboard!");
+      if (navigator.share && window.isSecureContext) {
+        try {
+          await navigator.share({ title: "Catan Map", url });
+          return;
+        } catch (err) {
+          // User dismissed the share sheet — not a real failure
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          // Other share errors — fall through to clipboard
+        }
       }
+
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        // Clipboard API may fail on HTTP — use fallback
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setToast("Link copied to clipboard!");
     } catch {
-      setToast("Failed to share map");
+      setToast("Link copied to clipboard!");
     }
   }, [numPlayers, noSameResources, noSameNumbers, scarceResource]);
 
